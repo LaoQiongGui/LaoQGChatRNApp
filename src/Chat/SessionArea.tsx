@@ -43,7 +43,7 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
                   styles.contextArea,
                   item.flag === SessionContext.QUESTION ? styles.contextAreaQuestion : styles.contextAreaAnswer
                 ]}>
-                <Text>{item.content}</Text>
+                <Text selectable={true}>{item.content}</Text>
               </View>
             </View>
           ))}
