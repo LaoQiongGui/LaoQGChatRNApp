@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   questionTextArea: {
-    flexGrow: 1,
+    flex: 1,
     height: '100%',
   },
   sendButtonContainer: {

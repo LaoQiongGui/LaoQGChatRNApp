@@ -5,14 +5,15 @@ import { iconStyles } from '../Common/Styles';
 
 interface SessionTabProps {
   title: string,
+  isActive: boolean,
   onCloseBtnClicked: () => void,
 }
 
 const SessionTab: React.FC<SessionTabProps> = (props: SessionTabProps) => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, props.isActive ? styles.containerActive : styles.containerInactive]}>
       <View style={styles.title}>
-        <Text>{props.title}</Text>
+        <Text style={styles.titleContext}>{props.title}</Text>
       </View>
       <TouchableOpacity style={styles.deleteBtn} onPress={props.onCloseBtnClicked}>
         <Image
@@ -30,18 +31,26 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 10,
     flexDirection: 'row',
-    backgroundColor: MaterialColors[1],
     paddingLeft: 10,
     paddingRight: 10,
     paddingTop: 10,
     paddingBottom: 10,
+  },
+  containerActive: {
+    backgroundColor: MaterialColors[2],
+  },
+  containerInactive: {
+    backgroundColor: MaterialColors[1],
   },
   title: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Transparent,
     paddingLeft: 10,
-    fontSize: 18,
+  },
+  titleContext: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   deleteBtn: {},
 })

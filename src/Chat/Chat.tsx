@@ -75,7 +75,7 @@ const Chat: React.FC = () => {
               onPress={() => {
                 setCurSessionIndex(() => { return index; });
               }}>
-              <SessionTab title={item.title} onCloseBtnClicked={() => { closeSession(index) }} />
+              <SessionTab title={item.title} isActive={index === curSessionIndex} onCloseBtnClicked={() => { closeSession(index) }} />
             </TouchableOpacity>
           ))}
           <TouchableOpacity onPress={() => { return addSession(); }} style={styles.addButton}>
