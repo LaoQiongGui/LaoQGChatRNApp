@@ -152,8 +152,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   questionTextArea: {
+    borderColor: Transparent,
     flex: 1,
     height: '100%',
+    backgroundColor: Transparent,
   },
   sendButtonContainer: {
     width: 50,

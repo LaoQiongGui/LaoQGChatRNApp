@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
-import { MaterialColors } from '../Common/Colors';
+import { MaterialColors, Transparent } from '../Common/Colors';
 
 const Account: React.FC = () => {
   return (
@@ -66,8 +66,10 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   accountInput: {
+    borderColor: Transparent,
     width: '100%',
     fontSize: 16,
+    backgroundColor: Transparent,
   },
   passwordContainer: {
     marginTop: 20,
@@ -82,8 +84,10 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   passwordInput: {
+    borderColor: Transparent,
     width: '100%',
     fontSize: 16,
+    backgroundColor: Transparent,
   },
   loginBtn: {
     marginTop: 20,
