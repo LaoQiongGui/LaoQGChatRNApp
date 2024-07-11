@@ -8,8 +8,8 @@
 
   <Identity
     Name="096bc4fa-fb72-4051-a1c6-57713ff0c5c7"
-    Publisher="CN=23077"
-    Version="1.0.0.0" />
+    Publisher="CN=LaoQiongGui"
+    Version="1.0.2.0" />
 
   <mp:PhoneIdentity PhoneProductId="096bc4fa-fb72-4051-a1c6-57713ff0c5c7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
