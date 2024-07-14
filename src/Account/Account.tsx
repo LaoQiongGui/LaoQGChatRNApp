@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
-import { MaterialColors, Transparent } from '../Common/Colors';
+import { StyleSheet, Image, View } from 'react-native';
+import { Button, Text, TextInput, TouchableRipple } from 'react-native-paper';
 
 const Account: React.FC = () => {
   return (
@@ -13,20 +13,18 @@ const Account: React.FC = () => {
       </View>
       <View style={styles.accountContainer}>
         <TextInput
-          style={styles.accountInput}
-          placeholder='账号'
-          placeholderTextColor={MaterialColors[2]} />
+          label={'账号'}
+          style={styles.accountInput} />
       </View>
       <View style={styles.passwordContainer}>
         <TextInput
+          label={'密码'}
           style={styles.passwordInput}
-          placeholder='密码'
-          placeholderTextColor={MaterialColors[2]}
           secureTextEntry />
       </View>
-      <TouchableOpacity style={styles.loginBtn}>
+      <Button mode='contained' style={styles.loginBtn}>
         <Text style={styles.loginText}>登录</Text>
-      </TouchableOpacity>
+      </Button>
     </View>
   )
 }
@@ -38,7 +36,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     flexDirection: 'column',
-    backgroundColor: MaterialColors[0],
     paddingLeft: 35,
     paddingRight: 35,
   },
@@ -55,45 +52,28 @@ const styles = StyleSheet.create({
   },
   accountContainer: {
     marginTop: 20,
-    borderColor: MaterialColors[2],
-    borderWidth: 1,
-    height: 50,
+    height: 60,
     width: '100%',
-    backgroundColor: MaterialColors[1],
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 10,
-    paddingRight: 10,
   },
   accountInput: {
-    borderColor: Transparent,
     width: '100%',
     fontSize: 16,
-    backgroundColor: Transparent,
   },
   passwordContainer: {
     marginTop: 20,
-    borderColor: MaterialColors[2],
-    borderWidth: 1,
-    height: 50,
+    height: 60,
     width: '100%',
-    backgroundColor: MaterialColors[1],
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 10,
-    paddingRight: 10,
   },
   passwordInput: {
-    borderColor: Transparent,
     width: '100%',
     fontSize: 16,
-    backgroundColor: Transparent,
   },
   loginBtn: {
     marginTop: 20,
     borderRadius: 4,
     height: 50,
-    backgroundColor: MaterialColors[2],
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -1,13 +1,12 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MaterialColors } from '../Common/Colors';
 import { EndChat } from '../APIs/EndChat';
 import { myServer } from '../Common/Server';
 import { SessionEntity } from './SessionEntity';
-import SessionTab from './SessionTab';
 import SessionArea from './SessionArea';
 import { iconStyles } from '../Common/Styles';
+import { Chip, IconButton, Text } from 'react-native-paper';
 
 const Chat: React.FC = () => {
   const [sessionEntities, setSessionEntities] = useState<SessionEntity[]>([]);
@@ -69,21 +68,19 @@ const Chat: React.FC = () => {
       <ScrollView horizontal style={styles.sessionTabScroll} showsHorizontalScrollIndicator={false}>
         <View style={styles.sessionTabContainer}>
           {sessionEntities.map((item, index) => (
-            <TouchableOpacity
+            <Chip
               key={`SessionTab${index}`}
-              style={styles.sessionTab}
-              onPress={() => {
-                setCurSessionIndex(() => { return index; });
-              }}>
-              <SessionTab title={item.title} isActive={index === curSessionIndex} onCloseBtnClicked={() => { closeSession(index) }} />
-            </TouchableOpacity>
+              style={[styles.sessionTab, index !== 0 ? {marginLeft: 10} : null]}
+              closeIcon={() => <Image style={iconStyles.medium} source={require("../../resources/icons/close.png")} />}
+              onPress={() => { setCurSessionIndex(() => { return index; }); }}
+              onClose={() => { closeSession(index); }}>
+              <Text style={styles.sessionTabText}>{sessionEntities[index].title}</Text>
+            </Chip>
           ))}
-          <TouchableOpacity onPress={() => { return addSession(); }} style={styles.addButton}>
-            <Image
-              style={iconStyles.medium}
-              source={require('../../resources/icons/add.png')}
-            />
-          </TouchableOpacity>
+          <IconButton
+            mode='contained'
+            icon={() => <Image style={iconStyles.medium} source={require('../../resources/icons/add.png')} />}
+            onPress={() => { return addSession(); }} />
         </View>
       </ScrollView>
       {sessionEntities.map((item, index) => {
@@ -110,7 +107,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     flexDirection: 'column',
-    backgroundColor: MaterialColors[0],
     paddingLeft: 35,
     paddingRight: 35,
   },
@@ -118,19 +114,25 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 80,
     flexGrow: 0,
-    backgroundColor: MaterialColors[0],
   },
   sessionTabContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   addButton: {
-    backgroundColor: MaterialColors[1],
     justifyContent: 'center',
     alignItems: 'center',
   },
   sessionTab: {
-    marginRight: 10,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sessionTabText: {
+    fontSize: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingRight: 8,
   },
   sessionAreaContainer: {
     width: '100%',

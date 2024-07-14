@@ -1,14 +1,14 @@
-import { View, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import React, { useState } from 'react';
 import { SessionContext, SessionEntity } from './SessionEntity';
-import { MaterialColors, Transparent } from '../Common/Colors';
-import { Text } from 'react-native-paper';
+import { Button, IconButton, Text, TextInput } from 'react-native-paper';
 import { myServer } from '../Common/Server';
 import { LaoQGError } from '../Common/Errors';
 import { iconStyles } from '../Common/Styles';
 import { CommonRes } from '../APIs/CommonAPI';
 import { StartChat } from '../APIs/StartChat';
 import { Chat, ChatRes } from '../APIs/Chat';
+import { CustomTheme } from '../Common/Colors';
 
 interface SessionAreaProps {
   session: SessionEntity,
@@ -50,18 +50,15 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
         </ScrollView>
       </View>
       {/* 提问区域 */}
-      <View style={styles.questionContainer}>
-        <TextInput
-          style={styles.questionTextArea}
-          multiline={true}
-          numberOfLines={4}
-          value={questionText}
-          onChangeText={setQuestionText}
-          placeholder="请输入提问内容"
-          scrollEnabled={true}
-        />
-        <View style={styles.sendButtonContainer}>
-          <TouchableOpacity
+      <TextInput
+        label={'提问'}
+        style={styles.questionTextArea}
+        multiline={true}
+        value={questionText}
+        onChangeText={setQuestionText}
+        scrollEnabled={true}
+        right={
+          <TextInput.Icon
             style={styles.sendButton}
             onPress={async () => {
               props.session.context.push(new SessionContext(SessionContext.QUESTION, questionText));
@@ -86,14 +83,9 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
                 }
               }
             }}
-          >
-            <Image
-              style={iconStyles.medium}
-              source={require('../../resources/icons/arrow_forward.png')}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+            icon={() => <Image style={iconStyles.medium} source={require('../../resources/icons/arrow_forward.png')} />} />
+        }
+      />
     </View>
   )
 }
@@ -104,14 +96,11 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     height: '100%',
-    backgroundColor: Transparent,
     flexDirection: 'column',
   },
   conversationContainer: {
-    marginTop: 20,
     marginBottom: 20,
     flex: 1,
-    backgroundColor: Transparent,
     flexDirection: 'column',
   },
   contextAreaContainer: {
@@ -126,41 +115,23 @@ const styles = StyleSheet.create({
   },
   contextArea: {
     marginBottom: 10,
-    borderRadius: 15,
-    maxWidth: '70%',
-    paddingLeft: 20,
-    paddingRight: 20,
+    borderRadius: 10,
+    maxWidth: '80%',
+    paddingLeft: 15,
+    paddingRight: 15,
     paddingTop: 10,
     paddingBottom: 10,
   },
   contextAreaQuestion: {
-    backgroundColor: MaterialColors[1],
+    backgroundColor: CustomTheme.colors.primaryContainer,
   },
   contextAreaAnswer: {
-    backgroundColor: MaterialColors[2],
-  },
-  questionContainer: {
-    marginTop: 20,
-    marginBottom: 20,
-    borderRadius: 15,
-    height: 100,
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 10,
-    paddingBottom: 10,
-    backgroundColor: MaterialColors[1],
-    flexDirection: 'row',
+    backgroundColor: CustomTheme.colors.primary,
   },
   questionTextArea: {
-    borderColor: Transparent,
-    flex: 1,
-    height: '100%',
-    backgroundColor: Transparent,
-  },
-  sendButtonContainer: {
-    width: 50,
-    height: '100%',
-    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+    height: 100,
   },
   sendButton: {
     width: 50,
