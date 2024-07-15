@@ -7,6 +7,7 @@ import { SessionEntity } from './SessionEntity';
 import SessionArea from './SessionArea';
 import { iconStyles } from '../Common/Styles';
 import { Chip, IconButton, Text } from 'react-native-paper';
+import { CustomTheme } from '../Common/Colors';
 
 const Chat: React.FC = () => {
   const [sessionEntities, setSessionEntities] = useState<SessionEntity[]>([]);
@@ -16,7 +17,7 @@ const Chat: React.FC = () => {
     const newSessionEntity = new SessionEntity();
     newSessionEntity.title = `新建会话${sessionEntities.length + 1}`;
     setSessionEntities((sessionEntities) => { return [...sessionEntities, newSessionEntity]; });
-    setCurSessionIndex(() => { return (sessionEntities.length - 1); });
+    setCurSessionIndex(() => { return (sessionEntities.length); });
   }
 
   const closeSession = (index: number) => {
@@ -70,7 +71,7 @@ const Chat: React.FC = () => {
           {sessionEntities.map((item, index) => (
             <Chip
               key={`SessionTab${index}`}
-              style={[styles.sessionTab, index !== 0 ? {marginLeft: 10} : null]}
+              style={[styles.sessionTab, index !== curSessionIndex ? { backgroundColor: CustomTheme.colors.primary } : null, index !== 0 ? { marginLeft: 10 } : null]}
               closeIcon={() => <Image style={iconStyles.medium} source={require("../../resources/icons/close.png")} />}
               onPress={() => { setCurSessionIndex(() => { return index; }); }}
               onClose={() => { closeSession(index); }}>
