@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import Chat from './src/Chat/Chat';
 import Account from './src/Account/Account';
 import { iconStyles } from './src/Common/Styles';
 import { PaperProvider } from 'react-native-paper';
+import { AuthEntity } from './src/Account/AuthEntity';
 
 const Tab = createMaterialBottomTabNavigator();
 const iconMap: Map<string, any> = new Map([
@@ -16,6 +17,8 @@ const iconMap: Map<string, any> = new Map([
 ]);
 
 const App: React.FC = () => {
+  const [auth, setAuth] = useState<AuthEntity>(new AuthEntity());
+
   return (
     <PaperProvider theme={CustomTheme}>
       <SafeAreaProvider>
@@ -33,7 +36,9 @@ const App: React.FC = () => {
               })}
             >
               <Tab.Screen name='Chat' component={Chat}></Tab.Screen>
-              <Tab.Screen name='Account' component={Account}></Tab.Screen>
+              <Tab.Screen name='Account'>
+                {() => <Account auth={auth} updateAuth={(auth) => { setAuth(auth); }}></Account>}
+              </Tab.Screen>
             </Tab.Navigator>
           </View>
         </NavigationContainer>

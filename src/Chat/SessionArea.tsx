@@ -1,11 +1,10 @@
 import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import React, { useState } from 'react';
 import { SessionContext, SessionEntity } from './SessionEntity';
-import { Button, IconButton, Text, TextInput } from 'react-native-paper';
+import { Text, TextInput } from 'react-native-paper';
 import { myServer } from '../Common/Server';
 import { LaoQGError } from '../Common/Errors';
 import { iconStyles } from '../Common/Styles';
-import { CommonRes } from '../APIs/CommonAPI';
 import { StartChat } from '../APIs/StartChat';
 import { Chat, ChatRes } from '../APIs/Chat';
 import { CustomTheme } from '../Common/Colors';
@@ -156,34 +155,30 @@ const chat = async (session: SessionEntity, question: string): Promise<ChatRes> 
     // sessionId未设置则调用StartChat开启新会话
     const res = await StartChat({ server: myServer, question: question });
 
-    if (!res.ok) {
+    if (res.status != 200) {
       throw new LaoQGError(300, "网络异常");
     }
 
-    const data = (await res.json()) as CommonRes<ChatRes>;
-
     // 异常返回
-    if (data.common.status != 0) {
-      throw new LaoQGError(data.common.status, data.common.message_text);
+    if (res.data.common.status != 0) {
+      throw new LaoQGError(res.data.common.status, res.data.common.message_text);
     }
 
     // 正常返回
-    return data.data;
+    return res.data.data;
   } else {
     // sessionId已设置则调用Chat继续会话
     const res = await Chat({ server: myServer, sessionId: session.sessionId, question: question });
-    if (!res.ok) {
+    if (res.status != 200) {
       throw new LaoQGError(300, "网络异常");
     }
 
-    const data = (await res.json()) as CommonRes<ChatRes>;
-
     // 异常返回
-    if (data.common.status != 0) {
-      throw new LaoQGError(data.common.status, data.common.message_text);
+    if (res.data.common.status != 0) {
+      throw new LaoQGError(res.data.common.status, res.data.common.message_text);
     }
 
     // 正常返回
-    return data.data;
+    return res.data.data;
   }
 }

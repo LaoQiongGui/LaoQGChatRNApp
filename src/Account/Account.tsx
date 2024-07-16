@@ -1,8 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Image, View } from 'react-native';
-import { Button, Text, TextInput, TouchableRipple } from 'react-native-paper';
+import { Button, Text, TextInput } from 'react-native-paper';
+import { Login, LoginRes } from '../APIs/Login';
+import { LaoQGError } from '../Common/Errors';
+import { myServer } from '../Common/Server';
+import { CommonRes } from '../APIs/CommonAPI';
+import { AuthEntity } from './AuthEntity';
+import { StartChat } from '../APIs/StartChat';
 
-const Account: React.FC = () => {
+interface AccountProps {
+  auth: AuthEntity,
+  updateAuth: (auth: AuthEntity) => void,
+}
+
+const Account: React.FC<AccountProps> = (props: AccountProps) => {
+  // 账号
+  const [userName, setUserName] = useState<string>(props.auth.userName);
+  // 密码
+  const [password, setPassword] = useState<string>(props.auth.password);
+
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
@@ -14,15 +30,33 @@ const Account: React.FC = () => {
       <View style={styles.accountContainer}>
         <TextInput
           label={'账号'}
-          style={styles.accountInput} />
+          style={styles.accountInput}
+          value={userName}
+          onChangeText={setUserName} />
       </View>
       <View style={styles.passwordContainer}>
         <TextInput
           label={'密码'}
           style={styles.passwordInput}
-          secureTextEntry />
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword} />
       </View>
-      <Button mode='contained' style={styles.loginBtn}>
+      <Button
+        mode='contained' style={styles.loginBtn}
+        onPress={async () => {
+          const userNameTmp: string = userName;
+          const passwordTmp: string = password;
+          try {
+            const data: LoginRes = await login(userName, password);
+            if (data) {
+              props.auth.userName = userNameTmp;
+              props.auth.password = passwordTmp;
+              props.auth.loginToken = data.loginToken;
+              props.updateAuth(props.auth);
+            }
+          } catch { }
+        }}>
         <Text style={styles.loginText}>登录</Text>
       </Button>
     </View>
@@ -82,3 +116,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 })
+
+const login = async (userName: string, password: string): Promise<LoginRes> => {
+  // 账号密码为空立即返回
+  if (!userName || !password || password.length < 8) {
+    throw new LaoQGError(100, "账号或密码为空或格式错误");
+  }
+
+  const res = await Login({ server: myServer, userName: userName, password: password });
+
+  if (res.status != 200) {
+    throw new LaoQGError(300, "网络异常");
+  }
+
+  // 异常返回
+  if (res.data.common.status != 0) {
+    throw new LaoQGError(res.data.common.status, res.data.common.message_text);
+  }
+
+  // 正常返回
+  return res.data.data;
+}
