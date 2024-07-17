@@ -11,6 +11,7 @@ export interface LoginProps {
 
 export interface LoginRes {
     loginToken: string,
+    permission: string,
 }
 
 export const Login = (props: LoginProps): Promise<AxiosResponse<CommonRes<LoginRes>>> => {

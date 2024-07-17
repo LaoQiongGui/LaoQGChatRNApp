@@ -5,16 +5,19 @@ class AuthEntity {
     userName: string
     password: string
     loginToken: string
+    permission: string
 
     constructor(
         userName: string = '',
         password: string = '',
         loginToken: string = '',
+        permission: string = 'normal',
     ) {
         this.instanceId = uuid.v4() as string;
         this.userName = userName;
         this.password = password;
         this.loginToken = loginToken;
+        this.permission = permission;
     }
 
     public getInstanceId(): string {

@@ -4,20 +4,18 @@ import { Button, Text, TextInput } from 'react-native-paper';
 import { Login, LoginRes } from '../APIs/Login';
 import { LaoQGError } from '../Common/Errors';
 import { myServer } from '../Common/Server';
-import { CommonRes } from '../APIs/CommonAPI';
 import { AuthEntity } from './AuthEntity';
-import { StartChat } from '../APIs/StartChat';
 
 interface AccountProps {
-  auth: AuthEntity,
-  updateAuth: (auth: AuthEntity) => void,
+  authInfo: AuthEntity,
+  updateAuthInfo: (authInfo: AuthEntity) => void,
 }
 
 const Account: React.FC<AccountProps> = (props: AccountProps) => {
   // 账号
-  const [userName, setUserName] = useState<string>(props.auth.userName);
+  const [userName, setUserName] = useState<string>(props.authInfo.userName);
   // 密码
-  const [password, setPassword] = useState<string>(props.auth.password);
+  const [password, setPassword] = useState<string>(props.authInfo.password);
 
   return (
     <View style={styles.container}>
@@ -50,10 +48,11 @@ const Account: React.FC<AccountProps> = (props: AccountProps) => {
           try {
             const data: LoginRes = await login(userName, password);
             if (data) {
-              props.auth.userName = userNameTmp;
-              props.auth.password = passwordTmp;
-              props.auth.loginToken = data.loginToken;
-              props.updateAuth(props.auth);
+              props.authInfo.userName = userNameTmp;
+              props.authInfo.password = passwordTmp;
+              props.authInfo.loginToken = data.loginToken;
+              props.authInfo.permission = data.permission;
+              props.updateAuthInfo(props.authInfo);
             }
           } catch { }
         }}>
