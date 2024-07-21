@@ -3,6 +3,7 @@ import { Server } from "../Common/Server";
 import { ChatRes } from "./Chat";
 import { CommonRes } from "./CommonAPI";
 import { AuthEntity } from "../Account/AuthEntity";
+import { LaoQGError } from "../Common/Errors";
 
 export interface StartChatProps {
     server: Server,
@@ -11,6 +12,10 @@ export interface StartChatProps {
 }
 
 export const StartChat = (props: StartChatProps): Promise<AxiosResponse<CommonRes<ChatRes>>> => {
+    if (!props.authInfo.loginToken) {
+        throw new LaoQGError(200, "请先登录。");
+    }
+
     const url = `http://${props.server.host}:${props.server.port}/Chat/StartChat`;
     const config = {
         headers: {
