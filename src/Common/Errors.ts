@@ -1,5 +1,5 @@
 export class LaoQGError extends Error {
-    messageCode: number;
+    private messageCode: number;
 
     constructor(messageCode: number, messageText: string) {
         super(messageText);

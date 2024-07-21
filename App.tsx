@@ -55,15 +55,17 @@ const App: React.FC = () => {
                 }
               })}
             >
-              <Tab.Screen name='Chat' component={Chat}></Tab.Screen>
+              <Tab.Screen name='Chat'>
+                {() => <Chat authInfo={authInfo} />}
+              </Tab.Screen>
               {Platform.OS === 'windows' && authInfo.permission === 'super' ? <Tab.Screen name='Administrator'>
-                {() => <Administrator></Administrator>}
+                {() => <Administrator />}
               </Tab.Screen> : null}
               <Tab.Screen name='Account'>
                 {() => <Account authInfo={authInfo} updateAuthInfo={(authInfoTmp) => {
                   saveAuthInfo(authInfoTmp);
                   setAuthInfo(authInfoTmp);
-                }}></Account>}
+                }} />}
               </Tab.Screen>
             </Tab.Navigator>
           </View>

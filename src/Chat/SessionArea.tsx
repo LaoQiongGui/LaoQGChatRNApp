@@ -1,15 +1,17 @@
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, Image, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
 import React, { useState } from 'react';
 import { SessionContext, SessionEntity } from './SessionEntity';
-import { Text, TextInput } from 'react-native-paper';
+import { Snackbar, Text, TextInput } from 'react-native-paper';
 import { myServer } from '../Common/Server';
 import { LaoQGError } from '../Common/Errors';
 import { iconStyles } from '../Common/Styles';
 import { StartChat } from '../APIs/StartChat';
 import { Chat, ChatRes } from '../APIs/Chat';
 import { CustomTheme } from '../Common/Colors';
+import { AuthEntity } from '../Account/AuthEntity';
 
 interface SessionAreaProps {
+  authInfo: AuthEntity,
   session: SessionEntity,
   updateSession: (session: SessionEntity) => void,
 }
@@ -23,6 +25,36 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
   const [status, setStatus] = useState<Status>(Status.NORMAL);
   /** 提问内容 */
   const [questionText, setQuestionText] = useState<string>('');
+  /** 警告信息 */
+  const [error, setError] = useState<LaoQGError>();
+
+  const submitHandler = async () => {
+    props.session.context.push(new SessionContext(SessionContext.QUESTION, questionText));
+    props.updateSession(props.session);
+    setQuestionText('');
+    setStatus(Status.LOADING);
+    try {
+      const data: ChatRes = await chat(props.authInfo, props.session, questionText);
+      if (data) {
+        props.session.sessionId = data.sessionId;
+        props.session.context.push(new SessionContext(SessionContext.ANSWER, data.answer));
+        props.updateSession(props.session);
+        setStatus(Status.NORMAL);
+        setError(undefined);
+      }
+    } catch (error) {
+      if (error instanceof LaoQGError && error.getMessageCode() < 200) {
+        setStatus(Status.WARNING);
+        setError(error);
+      } else if (error instanceof LaoQGError) {
+        setStatus(Status.ERROR);
+        setError(error);
+      } else {
+        setStatus(Status.ERROR);
+        setError(new LaoQGError(900, (error as Error).message));
+      }
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -59,32 +91,26 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
         right={
           <TextInput.Icon
             style={styles.sendButton}
-            onPress={async () => {
-              props.session.context.push(new SessionContext(SessionContext.QUESTION, questionText));
-              props.updateSession(props.session);
-              setQuestionText('');
-              setStatus(Status.LOADING);
-              try {
-                const data: ChatRes = await chat(props.session, questionText);
-                if (data) {
-                  props.session.sessionId = data.sessionId;
-                  props.session.context.push(new SessionContext(SessionContext.ANSWER, data.answer));
-                  props.updateSession(props.session);
-                  setStatus(Status.NORMAL);
-                }
-              } catch (error) {
-                props.session.context.push(new SessionContext(SessionContext.ANSWER, `ERROR: ${error}`));
-                props.updateSession(props.session);
-                if (error instanceof LaoQGError && error.messageCode < 200) {
-                  setStatus(Status.WARNING);
-                } else {
-                  setStatus(Status.ERROR);
-                }
-              }
-            }}
+            onPress={submitHandler}
             icon={() => <Image style={iconStyles.medium} source={require('../../resources/icons/arrow_forward.png')} />} />
         }
       />
+      <Snackbar
+        visible={status === Status.WARNING || status === Status.ERROR}
+        style={[
+          (() => {
+            if (!error) { return null; }
+            else if (error.getMessageCode() < 100) { return styles.errorAreaInfo; }
+            else if (error.getMessageCode() < 200) { return styles.errorAreaWarning; }
+            else { return styles.errorAreaError; }
+          })(),
+        ]}
+        action={{
+          label: '隐藏',
+          onPress: () => setError(undefined)
+        }}
+        onDismiss={() => { }}
+      ><Text>{error?.getMessageText()}</Text></Snackbar>
     </View>
   )
 }
@@ -138,9 +164,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  errorAreaInfo: {
+    backgroundColor: CustomTheme.colors.primaryContainer,
+  },
+  errorAreaWarning: {
+    backgroundColor: CustomTheme.colors.tertiary,
+  },
+  errorAreaError: {
+    backgroundColor: CustomTheme.colors.error,
+  },
 })
 
-const chat = async (session: SessionEntity, question: string): Promise<ChatRes> => {
+const chat = async (authInfo: AuthEntity, session: SessionEntity, question: string): Promise<ChatRes> => {
   // 没有提问内容立刻返回
   if (!question) {
     throw new LaoQGError(100, "请输入提问内容");
@@ -153,7 +188,7 @@ const chat = async (session: SessionEntity, question: string): Promise<ChatRes> 
 
   if (!session.sessionId) {
     // sessionId未设置则调用StartChat开启新会话
-    const res = await StartChat({ server: myServer, question: question });
+    const res = await StartChat({ server: myServer, authInfo: authInfo, question: question });
 
     if (res.status != 200) {
       throw new LaoQGError(300, "网络异常");
@@ -168,7 +203,7 @@ const chat = async (session: SessionEntity, question: string): Promise<ChatRes> 
     return res.data.data;
   } else {
     // sessionId已设置则调用Chat继续会话
-    const res = await Chat({ server: myServer, sessionId: session.sessionId, question: question });
+    const res = await Chat({ server: myServer, authInfo: authInfo, sessionId: session.sessionId, question: question });
     if (res.status != 200) {
       throw new LaoQGError(300, "网络异常");
     }

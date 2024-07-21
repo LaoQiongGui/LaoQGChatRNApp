@@ -2,9 +2,11 @@ import axios, { AxiosResponse } from "axios";
 import { Server } from "../Common/Server";
 import { ChatRes } from "./Chat";
 import { CommonRes } from "./CommonAPI";
+import { AuthEntity } from "../Account/AuthEntity";
 
 export interface StartChatProps {
     server: Server,
+    authInfo: AuthEntity,
     question: string,
 }
 
@@ -13,7 +15,7 @@ export const StartChat = (props: StartChatProps): Promise<AxiosResponse<CommonRe
     const config = {
         headers: {
             'Content-Type': 'application/json',
-            'LoginToken': '6b1b4459-2c6f-4938-bc8d-2a3ef0c0dba6',
+            'LoginToken': props.authInfo.loginToken,
         },
         timeout: 120000,
     };

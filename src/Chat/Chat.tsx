@@ -8,8 +8,13 @@ import SessionArea from './SessionArea';
 import { iconStyles } from '../Common/Styles';
 import { Chip, IconButton, Text } from 'react-native-paper';
 import { CustomTheme } from '../Common/Colors';
+import { AuthEntity } from '../Account/AuthEntity';
 
-const Chat: React.FC = () => {
+interface ChatProps {
+  authInfo: AuthEntity,
+}
+
+const Chat: React.FC<ChatProps> = (props: ChatProps) => {
   const [sessionEntities, setSessionEntities] = useState<SessionEntity[]>([]);
   const [curSessionIndex, setCurSessionIndex] = useState<number>(0);
 
@@ -23,7 +28,7 @@ const Chat: React.FC = () => {
   const closeSession = (index: number) => {
     // 通知服务器关闭会话
     if (sessionEntities[index].sessionId) {
-      EndChat({ server: myServer, sessionId: sessionEntities[index].sessionId });
+      EndChat({ server: myServer, authInfo: props.authInfo, sessionId: sessionEntities[index].sessionId });
     }
     if (sessionEntities.length === 1) {
       // 没有会话时初始化一个会话
@@ -90,12 +95,14 @@ const Chat: React.FC = () => {
           style={[styles.sessionAreaContainer,
           index !== curSessionIndex ? { display: 'none' } : {}]}>
           <SessionArea
+            authInfo={props.authInfo}
             session={item}
             updateSession={(session: SessionEntity) => {
               setSessionEntities((sessionEntities) => {
                 return sessionEntities.map<SessionEntity>((sessionTmp) => { return session.getInstanceId() === sessionTmp.getInstanceId() ? session : sessionTmp; });
               });
-            }} /></View>
+            }} />
+        </View>
       })}
     </View>
   )
