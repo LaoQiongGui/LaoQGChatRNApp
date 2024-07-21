@@ -2,10 +2,10 @@ import uuid from 'react-native-uuid';
 
 class AuthEntity {
     private instanceId: string
-    userName: string
-    password: string
-    loginToken: string
-    permission: string
+    userName: null | string
+    password: null | string
+    loginToken: null | string
+    permission: null | string
 
     constructor(
         userName: string = '',

@@ -1,16 +1,28 @@
 export class LaoQGError extends Error {
-    private messageCode: number;
+    private statusCode: number;
+    private messageCode: string;
 
-    constructor(messageCode: number, messageText: string) {
+    constructor(statusCode: number, messageCode: string, messageText: string) {
         super(messageText);
+        this.statusCode = statusCode;
         this.messageCode = messageCode;
     }
 
     public toString(): string {
-        return `${this.messageCode < 200 ? "WARNING" : "ERROR"}(${this.messageCode}): ${this.message}`
+        if (this.statusCode < 100) {
+            return `${this.messageCode}: ${this.message}`;
+        } else if (this.statusCode < 200) {
+            return `警告(${this.messageCode}): ${this.message}`;
+        } else {
+            return `错误(${this.messageCode}): ${this.message}`;
+        }
     }
 
-    public getMessageCode(): number {
+    public getStatusCode(): number {
+        return this.statusCode;
+    }
+
+    public getMessageCode(): string {
         return this.messageCode;
     }
 

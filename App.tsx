@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Image, PermissionsAndroid, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from 'react-native-paper/react-navigation';
 import { CustomTheme } from './src/Common/Colors';
 import Chat from './src/Chat/Chat';
-import Account from './src/Account/Account';
+import Account, { AccountRef } from './src/Account/Account';
 import { iconStyles } from './src/Common/Styles';
-import { PaperProvider } from 'react-native-paper';
+import { PaperProvider, Snackbar, Text } from 'react-native-paper';
 import { AuthEntity } from './src/Account/AuthEntity';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LaoQGError } from './src/Common/Errors';
-import { Login, LoginRes } from './src/APIs/Login';
-import { myServer } from './src/Common/Server';
 import Administrator from './src/Administrator/Administrator';
+import { RootStackParamList } from './src/Common/Navigation';
+import { LaoQGError } from './src/Common/Errors';
 
-const Tab = createMaterialBottomTabNavigator();
+const Tab = createMaterialBottomTabNavigator<RootStackParamList>();
 const iconMap: Map<string, any> = new Map([
   ['Chat', require('./resources/icons/chat_bubble.png')],
   ['Administrator', require('./resources/icons/administrator.png')],
@@ -23,6 +22,11 @@ const iconMap: Map<string, any> = new Map([
 ]);
 
 const App: React.FC = () => {
+  /** 登陆函数 */
+  const loginRef = useRef<AccountRef>(null);
+  /** 异常信息 */
+  const [error, setError] = useState<LaoQGError>();
+  /** 认证信息 */
   const [authInfo, setAuthInfo] = useState<AuthEntity>(new AuthEntity());
 
   useEffect(() => {
@@ -32,9 +36,7 @@ const App: React.FC = () => {
     loadAuthInfo().then((authInfoTmp: AuthEntity | null) => {
       if (authInfoTmp) {
         setAuthInfo(authInfoTmp);
-        try {
-          login(authInfoTmp.userName, authInfoTmp.password);
-        } catch (error) { }
+        loginRef.current?.handleLogin();
       }
     });
   }, []);
@@ -56,19 +58,40 @@ const App: React.FC = () => {
               })}
             >
               <Tab.Screen name='Chat'>
-                {() => <Chat authInfo={authInfo} />}
+                {() => <Chat
+                  authInfo={authInfo}
+                  emitError={(error: LaoQGError) => { setError(error); }} />}
               </Tab.Screen>
               {Platform.OS === 'windows' && authInfo.permission === 'super' ? <Tab.Screen name='Administrator'>
                 {() => <Administrator />}
               </Tab.Screen> : null}
               <Tab.Screen name='Account'>
-                {() => <Account authInfo={authInfo} updateAuthInfo={(authInfoTmp) => {
-                  saveAuthInfo(authInfoTmp);
-                  setAuthInfo(authInfoTmp);
-                }} />}
+                {() => <Account
+                  ref={loginRef}
+                  authInfo={authInfo}
+                  updateAuthInfo={(authInfoTmp) => {
+                    saveAuthInfo(authInfoTmp);
+                    setAuthInfo(authInfoTmp);
+                  }}
+                  emitError={(error: LaoQGError) => { setError(error); }} />}
               </Tab.Screen>
             </Tab.Navigator>
           </View>
+          <Snackbar
+            visible={!!error}
+            style={[
+              (() => {
+                if (!error) { return null; }
+                else if (error.getStatusCode() < 100) { return styles.errorAreaInfo; }
+                else if (error.getStatusCode() < 200) { return styles.errorAreaWarning; }
+                else { return styles.errorAreaError; }
+              })(),
+            ]}
+            onDismiss={() => setError(undefined)}
+            action={{
+              label: '隐藏',
+            }}
+          ><Text>{error ? error.toString() : ""}</Text></Snackbar>
         </NavigationContainer>
       </SafeAreaProvider>
     </PaperProvider>
@@ -83,6 +106,15 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   navigator: {},
+  errorAreaInfo: {
+    backgroundColor: CustomTheme.colors.primaryContainer,
+  },
+  errorAreaWarning: {
+    backgroundColor: CustomTheme.colors.tertiary,
+  },
+  errorAreaError: {
+    backgroundColor: CustomTheme.colors.error,
+  },
 });
 
 const requestStoragePermission = async () => {
@@ -122,25 +154,4 @@ const saveAuthInfo = async (authInfo: AuthEntity): Promise<void> => {
   } catch (error) {
     return;
   }
-}
-
-const login = async (userName: string, password: string): Promise<LoginRes> => {
-  // 账号密码为空立即返回
-  if (!userName || !password || password.length < 8) {
-    throw new LaoQGError(100, "账号或密码为空或格式错误");
-  }
-
-  const res = await Login({ server: myServer, userName: userName, password: password });
-
-  if (res.status != 200) {
-    throw new LaoQGError(300, "网络异常");
-  }
-
-  // 异常返回
-  if (res.data.common.status != 0) {
-    throw new LaoQGError(res.data.common.status, res.data.common.message_text);
-  }
-
-  // 正常返回
-  return res.data.data;
 }

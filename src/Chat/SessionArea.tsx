@@ -1,7 +1,7 @@
-import { View, StyleSheet, ScrollView, Image, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
+import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import React, { useState } from 'react';
 import { SessionContext, SessionEntity } from './SessionEntity';
-import { Snackbar, Text, TextInput } from 'react-native-paper';
+import { Text, TextInput } from 'react-native-paper';
 import { myServer } from '../Common/Server';
 import { LaoQGError } from '../Common/Errors';
 import { iconStyles } from '../Common/Styles';
@@ -14,6 +14,7 @@ interface SessionAreaProps {
   authInfo: AuthEntity,
   session: SessionEntity,
   updateSession: (session: SessionEntity) => void,
+  emitError: (error: LaoQGError) => void,
 }
 
 enum Status {
@@ -25,8 +26,6 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
   const [status, setStatus] = useState<Status>(Status.NORMAL);
   /** 提问内容 */
   const [questionText, setQuestionText] = useState<string>('');
-  /** 警告信息 */
-  const [error, setError] = useState<LaoQGError>();
 
   const submitHandler = async () => {
     props.session.context.push(new SessionContext(SessionContext.QUESTION, questionText));
@@ -40,18 +39,20 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
         props.session.context.push(new SessionContext(SessionContext.ANSWER, data.answer));
         props.updateSession(props.session);
         setStatus(Status.NORMAL);
-        setError(undefined);
       }
     } catch (error) {
-      if (error instanceof LaoQGError && error.getMessageCode() < 200) {
+      if (error instanceof LaoQGError && error.getStatusCode() < 200) {
         setStatus(Status.WARNING);
-        setError(error);
+        props.emitError(error);
       } else if (error instanceof LaoQGError) {
         setStatus(Status.ERROR);
-        setError(error);
+        props.emitError(error);
+      } else if (error instanceof Error) {
+        setStatus(Status.ERROR);
+        props.emitError(new LaoQGError(900, "WCMRN00", error.message));
       } else {
         setStatus(Status.ERROR);
-        setError(new LaoQGError(900, (error as Error).message));
+        props.emitError(new LaoQGError(900, "WCMRN00", '未知错误。'));
       }
     }
   }
@@ -95,22 +96,6 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
             icon={() => <Image style={iconStyles.medium} source={require('../../resources/icons/arrow_forward.png')} />} />
         }
       />
-      <Snackbar
-        visible={status === Status.WARNING || status === Status.ERROR}
-        style={[
-          (() => {
-            if (!error) { return null; }
-            else if (error.getMessageCode() < 100) { return styles.errorAreaInfo; }
-            else if (error.getMessageCode() < 200) { return styles.errorAreaWarning; }
-            else { return styles.errorAreaError; }
-          })(),
-        ]}
-        action={{
-          label: '隐藏',
-          onPress: () => setError(undefined)
-        }}
-        onDismiss={() => { }}
-      ><Text>{error?.getMessageText()}</Text></Snackbar>
     </View>
   )
 }
@@ -176,44 +161,14 @@ const styles = StyleSheet.create({
 })
 
 const chat = async (authInfo: AuthEntity, session: SessionEntity, question: string): Promise<ChatRes> => {
-  // 没有提问内容立刻返回
-  if (!question) {
-    throw new LaoQGError(100, "请输入提问内容");
-  }
-
   // 没有聊天记录先清除sessionId
   if (session.context.length === 0) {
     session.sessionId = null;
   }
 
-  if (!session.sessionId) {
-    // sessionId未设置则调用StartChat开启新会话
-    const res = await StartChat({ server: myServer, authInfo: authInfo, question: question });
+  const res = session.sessionId ?
+    await Chat({ server: myServer, authInfo: authInfo, sessionId: session.sessionId, question: question }) :
+    await StartChat({ server: myServer, authInfo: authInfo, question: question });
 
-    if (res.status != 200) {
-      throw new LaoQGError(300, "网络异常");
-    }
-
-    // 异常返回
-    if (res.data.common.status != 0) {
-      throw new LaoQGError(res.data.common.status, res.data.common.message_text);
-    }
-
-    // 正常返回
-    return res.data.data;
-  } else {
-    // sessionId已设置则调用Chat继续会话
-    const res = await Chat({ server: myServer, authInfo: authInfo, sessionId: session.sessionId, question: question });
-    if (res.status != 200) {
-      throw new LaoQGError(300, "网络异常");
-    }
-
-    // 异常返回
-    if (res.data.common.status != 0) {
-      throw new LaoQGError(res.data.common.status, res.data.common.message_text);
-    }
-
-    // 正常返回
-    return res.data.data;
-  }
+  return res;
 }

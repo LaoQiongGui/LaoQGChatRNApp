@@ -9,13 +9,21 @@ import { iconStyles } from '../Common/Styles';
 import { Chip, IconButton, Text } from 'react-native-paper';
 import { CustomTheme } from '../Common/Colors';
 import { AuthEntity } from '../Account/AuthEntity';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../Common/Navigation';
+import { LaoQGError } from '../Common/Errors';
 
 interface ChatProps {
   authInfo: AuthEntity,
+  emitError: (error: LaoQGError) => void,
 }
 
 const Chat: React.FC<ChatProps> = (props: ChatProps) => {
+  // 导航
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  // 会话列表
   const [sessionEntities, setSessionEntities] = useState<SessionEntity[]>([]);
+  // 当前会话
   const [curSessionIndex, setCurSessionIndex] = useState<number>(0);
 
   const addSession = () => {
@@ -101,7 +109,8 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
               setSessionEntities((sessionEntities) => {
                 return sessionEntities.map<SessionEntity>((sessionTmp) => { return session.getInstanceId() === sessionTmp.getInstanceId() ? session : sessionTmp; });
               });
-            }} />
+            }}
+            emitError={props.emitError} />
         </View>
       })}
     </View>
