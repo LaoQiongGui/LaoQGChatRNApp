@@ -1,12 +1,12 @@
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useState } from 'react';
-import { StyleSheet, Image, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Login, LoginRes } from '../APIs/Login';
-import { AuthEntity } from './AuthEntity';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { LaoQGError } from '../Common/Errors';
 import { RootStackParamList } from '../Common/Navigation';
 import { myServer } from '../Common/Server';
-import { LaoQGError } from '../Common/Errors';
+import { AuthEntity } from './AuthEntity';
 
 export interface AccountProps {
   authInfo: AuthEntity,

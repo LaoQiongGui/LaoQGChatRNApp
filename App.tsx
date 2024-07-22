@@ -1,18 +1,18 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavigationContainer } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Image, PermissionsAndroid, Platform, StyleSheet, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
-import { createMaterialBottomTabNavigator } from 'react-native-paper/react-navigation';
-import { CustomTheme } from './src/Common/Colors';
-import Chat from './src/Chat/Chat';
-import Account, { AccountRef } from './src/Account/Account';
-import { iconStyles } from './src/Common/Styles';
 import { PaperProvider, Snackbar, Text } from 'react-native-paper';
+import { createMaterialBottomTabNavigator } from 'react-native-paper/react-navigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Account, { AccountRef } from './src/Account/Account';
 import { AuthEntity } from './src/Account/AuthEntity';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Administrator from './src/Administrator/Administrator';
-import { RootStackParamList } from './src/Common/Navigation';
+import Chat from './src/Chat/Chat';
+import { CustomTheme } from './src/Common/Colors';
 import { LaoQGError } from './src/Common/Errors';
+import { RootStackParamList } from './src/Common/Navigation';
+import { iconStyles } from './src/Common/Styles';
 
 const Tab = createMaterialBottomTabNavigator<RootStackParamList>();
 const iconMap: Map<string, any> = new Map([

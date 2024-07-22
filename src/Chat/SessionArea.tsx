@@ -1,14 +1,14 @@
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import React, { useState } from 'react';
-import { SessionContext, SessionEntity } from './SessionEntity';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
-import { myServer } from '../Common/Server';
-import { LaoQGError } from '../Common/Errors';
-import { iconStyles } from '../Common/Styles';
-import { StartChat } from '../APIs/StartChat';
-import { Chat, ChatRes } from '../APIs/Chat';
-import { CustomTheme } from '../Common/Colors';
 import { AuthEntity } from '../Account/AuthEntity';
+import { Chat, ChatRes } from '../APIs/Chat';
+import { StartChat } from '../APIs/StartChat';
+import { CustomTheme } from '../Common/Colors';
+import { LaoQGError } from '../Common/Errors';
+import { myServer } from '../Common/Server';
+import { iconStyles } from '../Common/Styles';
+import { SessionContext, SessionEntity } from './SessionEntity';
 
 interface SessionAreaProps {
   authInfo: AuthEntity,

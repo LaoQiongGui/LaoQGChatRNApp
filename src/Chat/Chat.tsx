@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EndChat } from '../APIs/EndChat';
-import { myServer } from '../Common/Server';
-import { SessionEntity } from './SessionEntity';
-import SessionArea from './SessionArea';
-import { iconStyles } from '../Common/Styles';
-import { Chip, IconButton, Text } from 'react-native-paper';
-import { CustomTheme } from '../Common/Colors';
-import { AuthEntity } from '../Account/AuthEntity';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../Common/Navigation';
+import React, { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Chip, IconButton, Text } from 'react-native-paper';
+import { AuthEntity } from '../Account/AuthEntity';
+import { EndChat } from '../APIs/EndChat';
+import { CustomTheme } from '../Common/Colors';
 import { LaoQGError } from '../Common/Errors';
+import { RootStackParamList } from '../Common/Navigation';
+import { myServer } from '../Common/Server';
+import { iconStyles } from '../Common/Styles';
+import SessionArea from './SessionArea';
+import { SessionEntity } from './SessionEntity';
 
 interface ChatProps {
   authInfo: AuthEntity,
