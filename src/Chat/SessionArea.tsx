@@ -49,10 +49,10 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
         props.emitError(error);
       } else if (error instanceof Error) {
         setStatus(Status.ERROR);
-        props.emitError(new LaoQGError(900, "WCMRN00", error.message));
+        props.emitError(new LaoQGError(900, "ECMRN00", error.message));
       } else {
         setStatus(Status.ERROR);
-        props.emitError(new LaoQGError(900, "WCMRN00", '未知错误。'));
+        props.emitError(new LaoQGError(900, "ECMRN00", '未知错误。'));
       }
     }
   }

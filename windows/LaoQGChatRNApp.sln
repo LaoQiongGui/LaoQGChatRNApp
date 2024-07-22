@@ -39,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RNScreens", "..\node_module
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RNSVG", "..\node_modules\react-native-svg\windows\RNSVG\RNSVG.vcxproj", "{7ACF84EC-EFBA-4043-8E14-40B159508902}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RNPermissions", "..\node_modules\react-native-permissions\windows\RNPermissions\RNPermissions.vcxproj", "{99677B9D-A27B-4239-930E-C36C8D339C54}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\node_modules\react-native-windows\Shared\Shared.vcxitems*{2049dbe9-8d13-42c9-ae4b-413ae38fffd0}*SharedItemsImports = 9
@@ -176,6 +178,18 @@ Global
 		{7ACF84EC-EFBA-4043-8E14-40B159508902}.Release|x86.Build.0 = Release|Win32
 		{7ACF84EC-EFBA-4043-8E14-40B159508902}.Release|ARM64.ActiveCfg = Release|ARM64
 		{7ACF84EC-EFBA-4043-8E14-40B159508902}.Release|ARM64.Build.0 = Release|ARM64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Debug|x64.ActiveCfg = Debug|x64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Debug|x64.Build.0 = Debug|x64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Debug|x86.ActiveCfg = Debug|Win32
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Debug|x86.Build.0 = Debug|Win32
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Debug|ARM64.Build.0 = Debug|ARM64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Release|x64.ActiveCfg = Release|x64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Release|x64.Build.0 = Release|x64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Release|x86.ActiveCfg = Release|Win32
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Release|x86.Build.0 = Release|Win32
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Release|ARM64.ActiveCfg = Release|ARM64
+		{99677B9D-A27B-4239-930E-C36C8D339C54}.Release|ARM64.Build.0 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
