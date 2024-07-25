@@ -1,49 +1,52 @@
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Login, LoginRes } from '../APIs/Login';
 import { LaoQGError } from '../Common/Errors';
 import { RootStackParamList } from '../Common/Navigation';
 import { myServer } from '../Common/Server';
-import { AuthEntity } from './AuthEntity';
+import { AuthInfo, UserInfo } from './AuthEntity';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface AccountProps {
-  authInfo: AuthEntity,
-  updateAuthInfo: (authInfo: AuthEntity) => void,
+  authInfo: AuthInfo,
+  updateAuthInfo: (authInfo: AuthInfo) => void,
   emitError: (error: LaoQGError) => void,
 }
 
-export interface AccountRef {
-  handleLogin: () => void;
-}
-
-const Account = forwardRef<AccountRef, AccountProps>((props: AccountProps, ref: ForwardedRef<AccountRef>) => {
+const Account: React.FC<AccountProps> = (props: AccountProps) => {
   /** 导航 */
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   /** 账号 */
-  const [userName, setUserName] = useState<null | string>(props.authInfo.userName);
+  const [userName, setUserName] = useState<string>('');
   /** 密码 */
-  const [password, setPassword] = useState<null | string>(props.authInfo.password);
+  const [password, setPassword] = useState<string>('');
 
-  // 登录函数
-  useImperativeHandle(ref, () => ({
-    handleLogin: handleLogin,
-  }));
+  useEffect(() => {
+    loadUserInfo().then((userInfo: UserInfo | null) => {
+      if (!userInfo) { return; }
+      if (userInfo.userName) { setUserName(userInfo.userName); }
+      if (userInfo.password) { setPassword(userInfo.password); }
+      if (userInfo.userName && userInfo.password) {
+        handleLogin(userInfo.userName, userInfo.password);
+      }
+    });
+    return () => { }
+  }, []);
 
-  const handleLogin = async () => {
-    const userNameTmp: string = userName ? userName : "";
-    const passwordTmp: string = password ? password : "";
+  const handleLogin = async (userNameIn: string = userName, passwordIn: string = password) => {
     try {
       const data: LoginRes = await Login({
         server: myServer,
-        userName: userNameTmp,
-        password: passwordTmp
+        userName: userNameIn,
+        password: passwordIn,
       });
       // 登陆成功
-      // 记录账号密码
-      props.authInfo.userName = userNameTmp;
-      props.authInfo.password = passwordTmp;
+      // 记住账号密码
+      saveUserInfo(new UserInfo(userNameIn, passwordIn));
+
+      // 更新登录状态
       props.authInfo.loginToken = data.loginToken;
       props.authInfo.permission = data.permission;
       props.updateAuthInfo(props.authInfo);
@@ -54,8 +57,11 @@ const Account = forwardRef<AccountRef, AccountProps>((props: AccountProps, ref: 
       // 弹出登陆成功提示
       props.emitError(new LaoQGError(0, "NCMRN00", "登陆成功。"));
     } catch (error) {
-      // 登陆失败 清空密码和认证情报
-      props.authInfo.password = null;
+      // 登陆失败
+      // 清空密码
+      saveUserInfo(new UserInfo(userNameIn, ''));
+
+      // 清空认证情报
       props.authInfo.loginToken = null;
       props.authInfo.permission = null;
       props.updateAuthInfo(props.authInfo);
@@ -64,7 +70,7 @@ const Account = forwardRef<AccountRef, AccountProps>((props: AccountProps, ref: 
       } else if (error instanceof Error) {
         props.emitError(new LaoQGError(900, "ECMRN00", error.message));
       } else {
-        props.emitError(new LaoQGError(990, "ECMRN00", "未知异常。"));
+        props.emitError(new LaoQGError(900, "ECMRN00", "未知异常。"));
       }
     }
   };
@@ -102,12 +108,12 @@ const Account = forwardRef<AccountRef, AccountProps>((props: AccountProps, ref: 
       </View>
       <Button
         mode='contained' style={styles.loginBtn}
-        onPress={handleLogin}>
+        onPress={() => { return handleLogin(); }}>
         <Text style={styles.loginText}>登录</Text>
       </Button>
     </View>
   )
-});
+};
 
 export default Account
 
@@ -163,3 +169,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 })
+
+const loadUserInfo = async (): Promise<UserInfo | null> => {
+  try {
+    const userInfoStr = await AsyncStorage.getItem('UserInfo');
+    if (!userInfoStr) { return null; }
+    const userInfo = JSON.parse(userInfoStr) as UserInfo;
+    return userInfo;
+  } catch (error) {
+    return null;
+  }
+}
+
+const saveUserInfo = async (userInfo: UserInfo): Promise<void> => {
+  try {
+    const userInfoStr = JSON.stringify(userInfo);
+    await AsyncStorage.setItem('UserInfo', userInfoStr);
+    return;
+  } catch (error) {
+    return;
+  }
+}

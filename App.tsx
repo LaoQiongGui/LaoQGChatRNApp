@@ -5,8 +5,8 @@ import { Image, PermissionsAndroid, Platform, StyleSheet, View } from 'react-nat
 import { PaperProvider, Snackbar, Text } from 'react-native-paper';
 import { createMaterialBottomTabNavigator } from 'react-native-paper/react-navigation';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Account, { AccountRef } from './src/Account/Account';
-import { AuthEntity } from './src/Account/AuthEntity';
+import Account from './src/Account/Account';
+import { AuthInfo } from './src/Account/AuthEntity';
 import Administrator from './src/Administrator/Administrator';
 import Chat from './src/Chat/Chat';
 import { CustomTheme } from './src/Common/Colors';
@@ -22,23 +22,16 @@ const iconMap: Map<string, any> = new Map([
 ]);
 
 const App: React.FC = () => {
-  /** 登陆函数 */
-  const loginRef = useRef<AccountRef>(null);
   /** 异常信息 */
   const [error, setError] = useState<LaoQGError>();
   /** 认证信息 */
-  const [authInfo, setAuthInfo] = useState<AuthEntity>(new AuthEntity());
+  const [authInfo, setAuthInfo] = useState<AuthInfo>(new AuthInfo());
 
   useEffect(() => {
     if (Platform.OS === 'android') {
       requestStoragePermission();
     }
-    loadAuthInfo().then((authInfoTmp: AuthEntity | null) => {
-      if (authInfoTmp) {
-        setAuthInfo(authInfoTmp);
-        loginRef.current?.handleLogin();
-      }
-    });
+    return () => {}
   }, []);
 
   return (
@@ -56,6 +49,7 @@ const App: React.FC = () => {
                   />
                 }
               })}
+              initialRouteName='Account'
             >
               <Tab.Screen name='Chat'>
                 {() => <Chat
@@ -67,7 +61,6 @@ const App: React.FC = () => {
               </Tab.Screen> : null}
               <Tab.Screen name='Account'>
                 {() => <Account
-                  ref={loginRef}
                   authInfo={authInfo}
                   updateAuthInfo={(authInfoTmp) => {
                     saveAuthInfo(authInfoTmp);
@@ -133,22 +126,24 @@ const requestStoragePermission = async () => {
   } catch (error) { }
 };
 
-const loadAuthInfo = async (): Promise<AuthEntity | null> => {
+const loadAuthInfo = async (): Promise<AuthInfo | null> => {
   try {
     const authInfoStr = await AsyncStorage.getItem('AuthInfo');
     if (!authInfoStr) {
       return null;
     }
-    const authInfo = JSON.parse(authInfoStr) as AuthEntity;
+    const authInfo = JSON.parse(authInfoStr) as AuthInfo;
     return authInfo;
   } catch (error) {
     return null;
   }
 }
 
-const saveAuthInfo = async (authInfo: AuthEntity): Promise<void> => {
+const saveAuthInfo = async (authInfo: AuthInfo): Promise<void> => {
   try {
-    const authInfoStr = JSON.stringify(authInfo);
+    const authInfoTmp = authInfo;
+    authInfoTmp.loginToken = null;
+    const authInfoStr = JSON.stringify(authInfoTmp);
     await AsyncStorage.setItem('AuthInfo', authInfoStr);
     return;
   } catch (error) {

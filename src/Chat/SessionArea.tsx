@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
-import { AuthEntity } from '../Account/AuthEntity';
+import { AuthInfo } from '../Account/AuthInfo';
 import { Chat, ChatRes } from '../APIs/Chat';
 import { StartChat } from '../APIs/StartChat';
 import { CustomTheme } from '../Common/Colors';
@@ -11,7 +11,7 @@ import { iconStyles } from '../Common/Styles';
 import { SessionContext, SessionEntity } from './SessionEntity';
 
 interface SessionAreaProps {
-  authInfo: AuthEntity,
+  authInfo: AuthInfo,
   session: SessionEntity,
   updateSession: (session: SessionEntity) => void,
   emitError: (error: LaoQGError) => void,
@@ -28,6 +28,7 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
   const [questionText, setQuestionText] = useState<string>('');
 
   const submitHandler = async () => {
+    if (status === Status.ERROR) { props.session.context.pop(); }
     props.session.context.push(new SessionContext(SessionContext.QUESTION, questionText));
     props.updateSession(props.session);
     setQuestionText('');
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
   },
 })
 
-const chat = async (authInfo: AuthEntity, session: SessionEntity, question: string): Promise<ChatRes> => {
+const chat = async (authInfo: AuthInfo, session: SessionEntity, question: string): Promise<ChatRes> => {
   // 没有聊天记录先清除sessionId
   if (session.context.length === 0) {
     session.sessionId = null;

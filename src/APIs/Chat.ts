@@ -1,11 +1,11 @@
 import axios from "axios";
 import { Server } from "../Common/Server";
-import { AuthEntity } from "../Account/AuthEntity";
+import { AuthInfo } from "../Account/AuthInfo";
 import { LaoQGError } from "../Common/Errors";
 
 export interface ChatProps {
     server: Server,
-    authInfo: AuthEntity,
+    authInfo: AuthInfo,
     sessionId: string,
     question: string,
 }
@@ -37,12 +37,12 @@ export const Chat = async (props: ChatProps): Promise<ChatRes> => {
     const res = await axios.post(url, data, config);
 
     // 网络异常
-    if (res.status != 200) {
+    if (res.status !== 200) {
         throw new LaoQGError(300, "ECMRN00", "网络异常。");
     }
 
     // 后端业务异常
-    if (res.data.common.status != 0) {
+    if (res.data.common.status !== 0) {
         throw new LaoQGError(
             res.data.common.status,
             res.data.common.message_code,

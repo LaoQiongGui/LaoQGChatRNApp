@@ -35,12 +35,12 @@ export const Login = async (props: LoginProps): Promise<LoginRes> => {
     const res = await axios.post(url, data, config);
 
     // 网络异常
-    if (res.status != 200) {
+    if (res.status !==200) {
         throw new LaoQGError(300, "ECMRN00", "网络异常。");
     }
 
     // 后端业务异常
-    if (res.data.common.status != 0) {
+    if (res.data.common.status !==0) {
         throw new LaoQGError(
             res.data.common.status,
             res.data.common.message_code,

@@ -3,7 +3,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Chip, IconButton, Text } from 'react-native-paper';
-import { AuthEntity } from '../Account/AuthEntity';
+import { AuthInfo } from '../Account/AuthEntity';
 import { EndChat } from '../APIs/EndChat';
 import { CustomTheme } from '../Common/Colors';
 import { LaoQGError } from '../Common/Errors';
@@ -14,7 +14,7 @@ import SessionArea from './SessionArea';
 import { SessionEntity } from './SessionEntity';
 
 interface ChatProps {
-  authInfo: AuthEntity,
+  authInfo: AuthInfo,
   emitError: (error: LaoQGError) => void,
 }
 
@@ -52,7 +52,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
   const loadSessions = async () => {
     try {
       // 从本地缓存加载会话
-      const sessionEntitiesStr: string | null = await AsyncStorage.getItem('@session_entities');
+      const sessionEntitiesStr: string | null = await AsyncStorage.getItem('SessionEntities');
       // 没有本地缓存时初始化一个会话
       if (sessionEntitiesStr === null) { throw new Error("Null Pointer Exception"); }
       setSessionEntities(() => { return JSON.parse(sessionEntitiesStr); });
@@ -68,7 +68,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
     try {
       const sessionEntitiesStr: string = JSON.stringify(sessionEntities);
       // 缓存会话记录到本地缓存
-      await AsyncStorage.setItem('@session_entities', sessionEntitiesStr);
+      await AsyncStorage.setItem('SessionEntities', sessionEntitiesStr);
     } catch (exception) { }
   }
 
@@ -110,7 +110,12 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
                 return sessionEntities.map<SessionEntity>((sessionTmp) => { return session.getInstanceId() === sessionTmp.getInstanceId() ? session : sessionTmp; });
               });
             }}
-            emitError={props.emitError} />
+            emitError={(error) => {
+              if (error.getMessageText().substring(0, 3) === 'EAU') {
+                navigation.navigate('Account');
+              }
+              props.emitError(error);
+            }} />
         </View>
       })}
     </View>
