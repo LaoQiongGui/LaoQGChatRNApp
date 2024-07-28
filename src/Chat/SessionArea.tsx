@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
-import { AuthInfo } from '../Account/AuthInfo';
+import { AuthInfo } from '../Account/AuthEntity';
 import { Chat, ChatRes } from '../APIs/Chat';
 import { StartChat } from '../APIs/StartChat';
 import { CustomTheme } from '../Common/Colors';
@@ -9,6 +9,7 @@ import { LaoQGError } from '../Common/Errors';
 import { myServer } from '../Common/Server';
 import { iconStyles } from '../Common/Styles';
 import { SessionContext, SessionEntity } from './SessionEntity';
+import FastImage from 'react-native-fast-image';
 
 interface SessionAreaProps {
   authInfo: AuthInfo,
@@ -44,17 +45,16 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
     } catch (error) {
       if (error instanceof LaoQGError && error.getStatusCode() < 200) {
         setStatus(Status.WARNING);
-        props.emitError(error);
       } else if (error instanceof LaoQGError) {
         setStatus(Status.ERROR);
-        props.emitError(error);
       } else if (error instanceof Error) {
         setStatus(Status.ERROR);
-        props.emitError(new LaoQGError(900, "ECMRN00", error.message));
+        error = new LaoQGError(900, "ECMRN00", error.message);
       } else {
         setStatus(Status.ERROR);
-        props.emitError(new LaoQGError(900, "ECMRN00", '未知错误。'));
+        error = new LaoQGError(900, "ECMRN00", '未知错误。');
       }
+      props.emitError(error as LaoQGError);
     }
   }
 
@@ -70,7 +70,15 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
                 styles.contextAreaContainer,
                 item.flag === SessionContext.QUESTION ? styles.contextAreaContainerQuestion : styles.contextAreaContainerAnswer
               ]}>
-              {status === Status.LOADING && index === props.session.context.length - 1 ? <View><Text>Loading...</Text></View> : null}
+              {status === Status.LOADING && index === props.session.context.length - 1
+                ? <FastImage style={[iconStyles.medium, styles.contextAreaIcon]}
+                  source={require("../../resources/icons/loading.gif")}
+                  resizeMode={FastImage.resizeMode.contain} />
+                : null}
+              {status === Status.ERROR && index === props.session.context.length - 1
+                ? <Image style={[iconStyles.medium, styles.contextAreaIcon]}
+                  source={require("../../resources/icons/error.png")} />
+                : null}
               <View
                 style={[
                   styles.contextArea,
@@ -117,6 +125,10 @@ const styles = StyleSheet.create({
   contextAreaContainer: {
     width: '100%',
     flexDirection: 'row',
+  },
+  contextAreaIcon: {
+    marginTop: 5,
+    marginRight: 5,
   },
   contextAreaContainerQuestion: {
     justifyContent: 'flex-end',

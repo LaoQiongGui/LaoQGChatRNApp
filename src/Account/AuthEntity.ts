@@ -30,4 +30,8 @@ export class AuthInfo {
     public getInstanceId(): string {
         return this.instanceId;
     }
+
+    public copy(): AuthInfo {
+        return new AuthInfo(String(this.loginToken), String(this.permission));
+    }
 }

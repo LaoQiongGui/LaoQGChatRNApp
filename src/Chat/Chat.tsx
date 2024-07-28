@@ -111,7 +111,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
               });
             }}
             emitError={(error) => {
-              if (error.getMessageText().substring(0, 3) === 'EAU') {
+              if (error.getMessageCode().startsWith('EAU')) {
                 navigation.navigate('Account');
               }
               props.emitError(error);

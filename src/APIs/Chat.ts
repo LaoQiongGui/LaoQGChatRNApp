@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Server } from "../Common/Server";
-import { AuthInfo } from "../Account/AuthInfo";
+import { AuthInfo } from "../Account/AuthEntity";
 import { LaoQGError } from "../Common/Errors";
 
 export interface ChatProps {

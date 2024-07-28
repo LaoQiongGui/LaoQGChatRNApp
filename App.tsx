@@ -31,7 +31,7 @@ const App: React.FC = () => {
     if (Platform.OS === 'android') {
       requestStoragePermission();
     }
-    return () => {}
+    return () => { }
   }, []);
 
   return (
@@ -63,7 +63,6 @@ const App: React.FC = () => {
                 {() => <Account
                   authInfo={authInfo}
                   updateAuthInfo={(authInfoTmp) => {
-                    saveAuthInfo(authInfoTmp);
                     setAuthInfo(authInfoTmp);
                   }}
                   emitError={(error: LaoQGError) => { setError(error); }} />}
@@ -125,28 +124,3 @@ const requestStoragePermission = async () => {
     }
   } catch (error) { }
 };
-
-const loadAuthInfo = async (): Promise<AuthInfo | null> => {
-  try {
-    const authInfoStr = await AsyncStorage.getItem('AuthInfo');
-    if (!authInfoStr) {
-      return null;
-    }
-    const authInfo = JSON.parse(authInfoStr) as AuthInfo;
-    return authInfo;
-  } catch (error) {
-    return null;
-  }
-}
-
-const saveAuthInfo = async (authInfo: AuthInfo): Promise<void> => {
-  try {
-    const authInfoTmp = authInfo;
-    authInfoTmp.loginToken = null;
-    const authInfoStr = JSON.stringify(authInfoTmp);
-    await AsyncStorage.setItem('AuthInfo', authInfoStr);
-    return;
-  } catch (error) {
-    return;
-  }
-}
