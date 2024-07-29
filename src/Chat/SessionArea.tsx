@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Image, LayoutChangeEvent, LayoutRectangle, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { AuthInfo } from '../Account/AuthEntity';
 import { Chat, ChatRes } from '../APIs/Chat';
@@ -27,6 +27,14 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
   const [status, setStatus] = useState<Status>(Status.NORMAL);
   /** 提问内容 */
   const [questionText, setQuestionText] = useState<string>('');
+  /** 问答区域布局信息 */
+  const QALayoutsRef = useRef<LayoutRectangle[]>([]);
+  /** 滚动区域 */
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    return () => { }
+  }, []);
 
   const submitHandler = async () => {
     if (status === Status.ERROR) { props.session.context.pop(); }
@@ -34,6 +42,9 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
     props.updateSession(props.session);
     setQuestionText('');
     setStatus(Status.LOADING);
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true, });
+    });
     try {
       const data: ChatRes = await chat(props.authInfo, props.session, questionText);
       if (data) {
@@ -41,6 +52,11 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
         props.session.context.push(new SessionContext(SessionContext.ANSWER, data.answer));
         props.updateSession(props.session);
         setStatus(Status.NORMAL);
+        requestAnimationFrame(() => {
+          if (QALayoutsRef.current.length >= 2) {
+            scrollViewRef.current?.scrollTo({ y: QALayoutsRef.current[QALayoutsRef.current.length - 1].y, animated: true, });
+          }
+        });
       }
     } catch (error) {
       if (error instanceof LaoQGError && error.getStatusCode() < 200) {
@@ -62,14 +78,16 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
     <View style={styles.container}>
       {/* 聊天记录区域 */}
       <View style={styles.conversationContainer}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
           {props.session.context.map((item, index) => (
             <View
               key={'context' + index}
               style={[
                 styles.contextAreaContainer,
                 item.flag === SessionContext.QUESTION ? styles.contextAreaContainerQuestion : styles.contextAreaContainerAnswer
-              ]}>
+              ]}
+              // 保存布局信息
+              onLayout={(event: LayoutChangeEvent) => { QALayoutsRef.current[index] = event.nativeEvent.layout; }}>
               {status === Status.LOADING && index === props.session.context.length - 1
                 ? <FastImage style={[iconStyles.medium, styles.contextAreaIcon]}
                   source={require("../../resources/icons/loading.gif")}
