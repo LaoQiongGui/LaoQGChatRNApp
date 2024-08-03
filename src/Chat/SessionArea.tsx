@@ -1,6 +1,6 @@
 import { Image } from '@rneui/themed';
 import React, { useEffect, useRef, useState } from 'react';
-import { LayoutChangeEvent, LayoutRectangle, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, LayoutRectangle, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { AuthInfo } from '../Account/AuthEntity';
 import { Chat, ChatRes } from '../APIs/Chat';
@@ -9,12 +9,14 @@ import { CustomTheme } from '../Common/Colors';
 import { LaoQGError } from '../Common/Errors';
 import { myServer } from '../Common/Server';
 import { iconStyles, windowsStyles } from '../Common/Styles';
+import { DialogProps } from '../Interfaces/Dialog';
 import { SessionContext, SessionEntity } from './SessionEntity';
 
 interface SessionAreaProps {
   authInfo: AuthInfo,
   session: SessionEntity,
   updateSession: () => void,
+  emitDialog: (dialogProps: DialogProps) => void,
   emitError: (error: LaoQGError) => void,
 }
 
@@ -36,14 +38,14 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
     return () => { }
   }, []);
 
-  const submitHandler = async () => {
+  const submitHandler = async (questionTextIn: string = questionText) => {
     // 提问内容为空或处于加载状态直接返回
-    if (!questionText || status === Status.LOADING) { return; }
+    if (!questionTextIn || status === Status.LOADING) { return; }
 
     // 去除上一条发送失败的信息
     if (status === Status.ERROR) { props.session.context.pop(); }
 
-    props.session.context.push(new SessionContext(SessionContext.QUESTION, questionText));
+    props.session.context.push(new SessionContext(SessionContext.QUESTION, questionTextIn));
     props.updateSession();
     setQuestionText('');
 
@@ -52,12 +54,12 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
 
     // 滚动到最新的提问
     requestAnimationFrame(() => {
-      scrollViewRef.current?.scrollTo({ y: QALayoutsRef.current[QALayoutsRef.current.length].y, animated: true, });
+      scrollViewRef.current?.scrollToEnd();
     });
 
     // 发送请求
     try {
-      const data: ChatRes = await chat(props.authInfo, props.session, questionText);
+      const data: ChatRes = await chat(props.authInfo, props.session, questionTextIn);
       if (data) {
         props.session.sessionId = data.sessionId;
         props.session.context.push(new SessionContext(SessionContext.ANSWER, data.answer));
@@ -104,8 +106,31 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
                   source={require("../../resources/icons/loading.gif")} />
                 : null}
               {status === Status.ERROR && index === props.session.context.length - 1
-                ? <Image style={[iconStyles.medium, styles.contextAreaIcon]}
-                  source={require("../../resources/icons/error.png")} />
+                ? <TouchableOpacity onPress={() => {
+                  props.emitDialog({
+                    title: '提示',
+                    context: '是否重新发送该消息？',
+                    actions: [
+                      {
+                        text: '确认', pressHandler: (setDialogProps) => {
+                          // 再次发送消息
+                          const questionTextTmp = props.session.context[props.session.context.length - 1].content;
+                          if (!!questionTextTmp) { submitHandler(questionTextTmp); }
+
+                          // 隐藏对话框
+                          setDialogProps(null);
+                        }
+                      },
+                      {
+                        text: '取消', pressHandler: (setDialogProps) => {
+                          // 隐藏对话框
+                          setDialogProps(null);
+                        }
+                      },
+                    ],
+                  });
+                }}><Image style={[iconStyles.medium, styles.contextAreaIcon]}
+                  source={require("../../resources/icons/error.png")} /></TouchableOpacity>
                 : null}
               <View
                 style={[
@@ -130,7 +155,7 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
         right={
           <TextInput.Icon
             style={styles.sendButton}
-            onPress={submitHandler}
+            onPress={() => { submitHandler(); }}
             icon={() => <Image style={iconStyles.medium} source={require('../../resources/icons/arrow_forward.png')} />} />
         }
       />

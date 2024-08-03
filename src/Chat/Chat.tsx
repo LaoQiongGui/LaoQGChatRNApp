@@ -10,11 +10,13 @@ import { LaoQGError } from '../Common/Errors';
 import { RootStackParamList } from '../Common/Navigation';
 import { myServer } from '../Common/Server';
 import { iconStyles } from '../Common/Styles';
+import { DialogProps } from '../Interfaces/Dialog';
 import SessionArea from './SessionArea';
 import { SessionEntity } from './SessionEntity';
 
 interface ChatProps {
   authInfo: AuthInfo,
+  emitDialog: (dialogProps: DialogProps) => void,
   emitError: (error: LaoQGError) => void,
 }
 
@@ -101,6 +103,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
                 return sessionEntities;
               });
             }}
+            emitDialog={props.emitDialog}
             emitError={(error) => {
               if (error.getMessageCode().startsWith('EAU')) {
                 navigation.navigate('Account');

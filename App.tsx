@@ -1,8 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, PermissionsAndroid, Platform, StyleSheet, View } from 'react-native';
-import { PaperProvider, Snackbar, Text } from 'react-native-paper';
+import { Button, Dialog, PaperProvider, Portal, Snackbar, Text } from 'react-native-paper';
 import { createMaterialBottomTabNavigator } from 'react-native-paper/react-navigation';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Account from './src/Account/Account';
@@ -13,6 +12,7 @@ import { CustomTheme } from './src/Common/Colors';
 import { LaoQGError } from './src/Common/Errors';
 import { RootStackParamList } from './src/Common/Navigation';
 import { iconStyles } from './src/Common/Styles';
+import { DialogProps } from './src/Interfaces/Dialog';
 
 const Tab = createMaterialBottomTabNavigator<RootStackParamList>();
 const iconMap: Map<string, any> = new Map([
@@ -22,6 +22,8 @@ const iconMap: Map<string, any> = new Map([
 ]);
 
 const App: React.FC = () => {
+  /** 弹出框显示信息 */
+  const [dialogProps, setDialogProps] = useState<null | DialogProps>(null);
   /** 异常信息 */
   const [error, setError] = useState<LaoQGError>();
   /** 认证信息 */
@@ -54,6 +56,7 @@ const App: React.FC = () => {
               <Tab.Screen name='Chat'>
                 {() => <Chat
                   authInfo={authInfo}
+                  emitDialog={(dialogProps: DialogProps) => { setDialogProps(dialogProps); }}
                   emitError={(error: LaoQGError) => { setError(error); }} />}
               </Tab.Screen>
               {Platform.OS === 'windows' && authInfo.permission === 'super' ? <Tab.Screen name='Administrator'>
@@ -69,6 +72,23 @@ const App: React.FC = () => {
               </Tab.Screen>
             </Tab.Navigator>
           </View>
+          <Portal>
+            <Dialog visible={!!dialogProps} onDismiss={() => { setDialogProps(null); }}>
+              <Dialog.Title>
+                <Text>{!!dialogProps ? dialogProps.title : ''}</Text>
+              </Dialog.Title>
+              <Dialog.Content>
+                <Text>{!!dialogProps ? dialogProps.context : ''}</Text>
+              </Dialog.Content>
+              <Dialog.Actions>
+                {dialogProps?.actions.map((item, index) => (
+                  <Button key={`DialogActionButton${index}`} onPress={() => { item.pressHandler(setDialogProps); }}>
+                    <Text>{item.text}</Text>
+                  </Button>
+                ))}
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
           <Snackbar
             visible={!!error}
             style={[
