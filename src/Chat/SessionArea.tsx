@@ -1,5 +1,6 @@
+import { Image } from '@rneui/themed';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, LayoutChangeEvent, LayoutRectangle, ScrollView, StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, LayoutRectangle, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { AuthInfo } from '../Account/AuthEntity';
 import { Chat, ChatRes } from '../APIs/Chat';
@@ -7,14 +8,13 @@ import { StartChat } from '../APIs/StartChat';
 import { CustomTheme } from '../Common/Colors';
 import { LaoQGError } from '../Common/Errors';
 import { myServer } from '../Common/Server';
-import { iconStyles } from '../Common/Styles';
+import { iconStyles, windowsStyles } from '../Common/Styles';
 import { SessionContext, SessionEntity } from './SessionEntity';
-import FastImage from 'react-native-fast-image';
 
 interface SessionAreaProps {
   authInfo: AuthInfo,
   session: SessionEntity,
-  updateSession: (session: SessionEntity) => void,
+  updateSession: () => void,
   emitError: (error: LaoQGError) => void,
 }
 
@@ -37,20 +37,31 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
   }, []);
 
   const submitHandler = async () => {
+    // 提问内容为空或处于加载状态直接返回
+    if (!questionText || status === Status.LOADING) { return; }
+
+    // 去除上一条发送失败的信息
     if (status === Status.ERROR) { props.session.context.pop(); }
+
     props.session.context.push(new SessionContext(SessionContext.QUESTION, questionText));
-    props.updateSession(props.session);
+    props.updateSession();
     setQuestionText('');
+
+    // 切换为加载状态
     setStatus(Status.LOADING);
+
+    // 滚动到最新的提问
     requestAnimationFrame(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true, });
+      scrollViewRef.current?.scrollTo({ y: QALayoutsRef.current[QALayoutsRef.current.length].y, animated: true, });
     });
+
+    // 发送请求
     try {
       const data: ChatRes = await chat(props.authInfo, props.session, questionText);
       if (data) {
         props.session.sessionId = data.sessionId;
         props.session.context.push(new SessionContext(SessionContext.ANSWER, data.answer));
-        props.updateSession(props.session);
+        props.updateSession();
         setStatus(Status.NORMAL);
         requestAnimationFrame(() => {
           if (QALayoutsRef.current.length >= 2) {
@@ -89,9 +100,8 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
               // 保存布局信息
               onLayout={(event: LayoutChangeEvent) => { QALayoutsRef.current[index] = event.nativeEvent.layout; }}>
               {status === Status.LOADING && index === props.session.context.length - 1
-                ? <FastImage style={[iconStyles.medium, styles.contextAreaIcon]}
-                  source={require("../../resources/icons/loading.gif")}
-                  resizeMode={FastImage.resizeMode.contain} />
+                ? <Image style={[iconStyles.medium, styles.contextAreaIcon]}
+                  source={require("../../resources/icons/loading.gif")} />
                 : null}
               {status === Status.ERROR && index === props.session.context.length - 1
                 ? <Image style={[iconStyles.medium, styles.contextAreaIcon]}
@@ -112,6 +122,7 @@ const SessionArea: React.FC<SessionAreaProps> = (props: SessionAreaProps) => {
       <TextInput
         label={'提问'}
         style={styles.questionTextArea}
+        contentStyle={Platform.OS === 'windows' ? windowsStyles.input : null}
         multiline={true}
         value={questionText}
         onChangeText={setQuestionText}

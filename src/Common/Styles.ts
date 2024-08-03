@@ -1,5 +1,11 @@
 import { StyleSheet } from "react-native";
 
+export const windowsStyles = StyleSheet.create({
+    input: {
+        backgroundColor: 'rgba(255, 255, 255, 0)',
+    },
+});
+
 export const iconStyles = StyleSheet.create({
     large: {},
     medium: {
@@ -7,4 +13,4 @@ export const iconStyles = StyleSheet.create({
         height: 30,
     },
     small: {},
-})
+});

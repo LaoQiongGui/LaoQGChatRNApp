@@ -1,13 +1,14 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, Platform, StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Login, LoginRes } from '../APIs/Login';
 import { LaoQGError } from '../Common/Errors';
 import { RootStackParamList } from '../Common/Navigation';
 import { myServer } from '../Common/Server';
+import { windowsStyles } from '../Common/Styles';
 import { AuthInfo, UserInfo } from './AuthEntity';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface AccountProps {
   authInfo: AuthInfo,
@@ -87,6 +88,7 @@ const Account: React.FC<AccountProps> = (props: AccountProps) => {
         <TextInput
           label={'账号'}
           style={styles.accountInput}
+          contentStyle={Platform.OS === 'windows' ? windowsStyles.input : null}
           value={userName ? userName : ""}
           onChangeText={(input: string) => {
             // 账号只接受英文字母与数字
@@ -98,6 +100,7 @@ const Account: React.FC<AccountProps> = (props: AccountProps) => {
         <TextInput
           label={'密码'}
           style={styles.passwordInput}
+          contentStyle={Platform.OS === 'windows' ? windowsStyles.input : null}
           secureTextEntry
           value={password ? password : ""}
           onChangeText={(input: string) => {

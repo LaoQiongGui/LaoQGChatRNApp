@@ -25,8 +25,6 @@ export const EndChat = async (props: EndChatProps): Promise<void> => {
         SessionId: props.sessionId,
     };
 
-    console.log(url);
-
     const res = await axios.post(url, data, config);
 
     // 网络异常

@@ -29,8 +29,13 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
   const addSession = () => {
     const newSessionEntity = new SessionEntity();
     newSessionEntity.title = `新建会话${sessionEntities.length + 1}`;
-    setSessionEntities((sessionEntities) => { return [...sessionEntities, newSessionEntity]; });
-    setCurSessionIndex(() => { return (sessionEntities.length); });
+
+    setSessionEntities((sessionEntities) => {
+      const sessionEntitiesTmp: SessionEntity[] = [...sessionEntities, newSessionEntity];
+      saveSessions(sessionEntitiesTmp);
+      return sessionEntitiesTmp;
+    });
+    setCurSessionIndex(sessionEntities.length);
   }
 
   const closeSession = (index: number) => {
@@ -40,41 +45,26 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
     }
     if (sessionEntities.length === 1) {
       // 没有会话时初始化一个会话
-      setSessionEntities(() => { return [new SessionEntity('', '新建会话1')]; });
+      setSessionEntities(() => {
+        const sessionEntitiesTmp: SessionEntity[] = [new SessionEntity('', '新建会话1')];
+        saveSessions(sessionEntitiesTmp);
+        return sessionEntitiesTmp;
+      });
     } else {
       // 是最后一个会话时激活前一个会话
       if (curSessionIndex === sessionEntities.length - 1) { setCurSessionIndex(curSessionIndex - 1); }
-      setSessionEntities((sessionEntities) => { return [...sessionEntities.slice(0, index), ...sessionEntities.slice(index + 1)]; });
+      setSessionEntities((sessionEntities) => {
+        const sessionEntitiesTmp = [...sessionEntities.slice(0, index), ...sessionEntities.slice(index + 1)];
+        saveSessions(sessionEntitiesTmp);
+        return sessionEntitiesTmp;
+      });
     }
-  }
-
-  /** 加载会话记录 */
-  const loadSessions = async () => {
-    try {
-      // 从本地缓存加载会话
-      const sessionEntitiesStr: string | null = await AsyncStorage.getItem('SessionEntities');
-      // 没有本地缓存时初始化一个会话
-      if (sessionEntitiesStr === null) { throw new Error("Null Pointer Exception"); }
-      setSessionEntities(() => { return JSON.parse(sessionEntitiesStr); });
-      // 没有会话时初始化一个会话
-      if (sessionEntities.length === 0) { throw new Error("Null Pointer Exception"); }
-    } catch (exception) {
-      setSessionEntities(() => { return [new SessionEntity('', '新建会话1')]; });
-    }
-  }
-
-  /** 缓存会话记录 */
-  const saveSessions = async () => {
-    try {
-      const sessionEntitiesStr: string = JSON.stringify(sessionEntities);
-      // 缓存会话记录到本地缓存
-      await AsyncStorage.setItem('SessionEntities', sessionEntitiesStr);
-    } catch (exception) { }
   }
 
   useEffect(() => {
-    loadSessions();
-    return () => { saveSessions() };
+    loadSessions().then((sessionEntitiesTmp) => {
+      setSessionEntities(sessionEntitiesTmp);
+    });
   }, []);
 
   return (
@@ -105,9 +95,10 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
           <SessionArea
             authInfo={props.authInfo}
             session={item}
-            updateSession={(session: SessionEntity) => {
-              setSessionEntities((sessionEntities) => {
-                return sessionEntities.map<SessionEntity>((sessionTmp) => { return session.getInstanceId() === sessionTmp.getInstanceId() ? session : sessionTmp; });
+            updateSession={() => {
+              setSessionEntities(() => {
+                saveSessions(sessionEntities);
+                return sessionEntities;
               });
             }}
             emitError={(error) => {
@@ -161,3 +152,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 })
+
+/** 加载会话记录 */
+const loadSessions = async (): Promise<SessionEntity[]> => {
+  try {
+    // 从本地缓存加载会话
+    const sessionEntitiesStr: string | null = await AsyncStorage.getItem('SessionEntities');
+    // 没有本地缓存时初始化一个会话
+    if (sessionEntitiesStr === null) { throw new Error("Null Pointer Exception"); }
+    const newSessionEntities: SessionEntity[] = JSON.parse(sessionEntitiesStr);
+    // 没有会话时初始化一个会话
+    if (newSessionEntities.length === 0) { throw new Error("Null Pointer Exception"); }
+    return newSessionEntities;
+  } catch (exception) {
+    return [new SessionEntity('', '新建会话1')];
+  }
+}
+
+/** 缓存会话记录 */
+const saveSessions = async (sessionEntities: SessionEntity[]): Promise<void> => {
+  try {
+    const sessionEntitiesStr: string = JSON.stringify(sessionEntities);
+    // 缓存会话记录到本地缓存
+    await AsyncStorage.setItem('SessionEntities', sessionEntitiesStr);
+  } catch (exception) { }
+}

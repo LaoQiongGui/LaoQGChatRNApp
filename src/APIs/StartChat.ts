@@ -26,8 +26,6 @@ export const StartChat = async (props: StartChatProps): Promise<ChatRes> => {
         Question: props.question,
     };
 
-    console.log(url);
-
     const res = await axios.post(url, data, config);
 
     // 网络异常

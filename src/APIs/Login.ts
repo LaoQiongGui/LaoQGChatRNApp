@@ -30,8 +30,6 @@ export const Login = async (props: LoginProps): Promise<LoginRes> => {
         Password: CryptoJS.MD5(props.password).toString()
     };
 
-    console.log(url);
-
     const res = await axios.post(url, data, config);
 
     // 网络异常
