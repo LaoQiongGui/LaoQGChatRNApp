@@ -2,6 +2,7 @@ import axios from "axios";
 import { Server } from "../Common/Server";
 import { AuthInfo } from "../Account/AuthEntity";
 import { LaoQGError } from "../Common/Errors";
+import DeviceInfo from "react-native-device-info";
 
 export interface EndChatProps {
     server: Server,
@@ -17,6 +18,7 @@ export const EndChat = async (props: EndChatProps): Promise<void> => {
     const config = {
         headers: {
             'Content-Type': 'application/json',
+            'Version': DeviceInfo.getVersion(),
             'LoginToken': props.authInfo.loginToken,
         },
         timeout: 6000,
@@ -28,12 +30,12 @@ export const EndChat = async (props: EndChatProps): Promise<void> => {
     const res = await axios.post(url, data, config);
 
     // 网络异常
-    if (res.status !==200) {
+    if (res.status !== 200) {
         throw new LaoQGError(300, "ECMRN00", "网络异常。");
     }
 
     // 后端业务异常
-    if (res.data.common.status !==0) {
+    if (res.data.common.status !== 0) {
         throw new LaoQGError(
             res.data.common.status,
             res.data.common.message_code,

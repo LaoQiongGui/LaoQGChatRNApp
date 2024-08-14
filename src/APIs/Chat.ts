@@ -2,6 +2,7 @@ import axios from "axios";
 import { Server } from "../Common/Server";
 import { AuthInfo } from "../Account/AuthEntity";
 import { LaoQGError } from "../Common/Errors";
+import DeviceInfo from "react-native-device-info";
 
 export interface ChatProps {
     server: Server,
@@ -23,6 +24,7 @@ export const Chat = async (props: ChatProps): Promise<ChatRes> => {
     const config = {
         headers: {
             'Content-Type': 'application/json',
+            'Version': DeviceInfo.getVersion(),
             'LoginToken': props.authInfo.loginToken,
         },
         timeout: 120000,

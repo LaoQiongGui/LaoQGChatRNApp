@@ -2,6 +2,7 @@ import axios from "axios";
 import { Server } from "../Common/Server";
 import CryptoJS from 'crypto-js';
 import { LaoQGError } from "../Common/Errors";
+import DeviceInfo from "react-native-device-info";
 
 export interface LoginProps {
     server: Server,
@@ -22,6 +23,7 @@ export const Login = async (props: LoginProps): Promise<LoginRes> => {
     const config = {
         headers: {
             'Content-Type': 'application/json',
+            'Version': DeviceInfo.getVersion(),
         },
         timeout: 6000,
     };
@@ -38,7 +40,7 @@ export const Login = async (props: LoginProps): Promise<LoginRes> => {
     }
 
     // 后端业务异常
-    if (res.data.common.status !==0) {
+    if (res.data.common.status !== 0) {
         throw new LaoQGError(
             res.data.common.status,
             res.data.common.message_code,

@@ -3,6 +3,7 @@ import { AuthInfo } from "../Account/AuthEntity";
 import { LaoQGError } from "../Common/Errors";
 import { Server } from "../Common/Server";
 import { ChatRes } from "./Chat";
+import DeviceInfo from "react-native-device-info";
 
 export interface StartChatProps {
     server: Server,
@@ -18,6 +19,7 @@ export const StartChat = async (props: StartChatProps): Promise<ChatRes> => {
     const config = {
         headers: {
             'Content-Type': 'application/json',
+            'Version': DeviceInfo.getVersion(),
             'LoginToken': props.authInfo.loginToken,
         },
         timeout: 120000,
