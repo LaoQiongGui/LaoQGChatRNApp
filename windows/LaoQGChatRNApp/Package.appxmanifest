@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="com.laoqionggui.laoqiongguichatrnapp"
+    Name="com.laoqionggui.laoqiongguichatrnapp.debug"
     Publisher="CN=LaoQiongGui"
     Version="1.2.0.0" />
 

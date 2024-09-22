@@ -12,5 +12,8 @@ export const iconStyles = StyleSheet.create({
         width: 30,
         height: 30,
     },
-    small: {},
+    small: {
+        width: 22,
+        height: 22,
+    },
 });

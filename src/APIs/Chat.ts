@@ -1,19 +1,15 @@
 import axios from "axios";
-import { Server } from "../Common/Server";
-import { AuthInfo } from "../Account/AuthEntity";
-import { LaoQGError } from "../Common/Errors";
 import DeviceInfo from "react-native-device-info";
+import { AuthInfo } from "../Account/AuthEntity";
+import { ChatQuestionContent } from "../Chat/ChatSessionEntity";
+import { LaoQGError } from "../Common/Errors";
+import { Server } from "../Common/Server";
 
 export interface ChatProps {
     server: Server,
     authInfo: AuthInfo,
     sessionId: string,
-    question: string,
-}
-
-export interface ChatRes {
-    sessionId: string,
-    answer: string,
+    questionContents: ChatQuestionContent[],
 }
 
 export const Chat = async (props: ChatProps): Promise<ChatRes> => {
@@ -30,8 +26,8 @@ export const Chat = async (props: ChatProps): Promise<ChatRes> => {
         timeout: 120000,
     };
     const data = {
-        SessionId: props.sessionId,
-        Question: props.question
+        sessionId: props.sessionId,
+        contents: props.questionContents,
     };
 
     const res = await axios.post(url, data, config);
@@ -61,7 +57,7 @@ export const Chat = async (props: ChatProps): Promise<ChatRes> => {
 
 const check = (props: ChatProps) => {
     // 检测提问内容是否为空
-    if (!props.question) {
+    if (!props.questionContents) {
         throw new LaoQGError(100, "WCMRN00", "请输入提问内容");
     }
 
@@ -69,4 +65,9 @@ const check = (props: ChatProps) => {
     if (!props.authInfo.loginToken) {
         throw new LaoQGError(200, "EAURN00", "请先登录。");
     }
+}
+
+export interface ChatRes {
+    sessionId: string,
+    answer: string,
 }

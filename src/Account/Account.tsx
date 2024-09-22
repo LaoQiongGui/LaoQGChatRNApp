@@ -1,19 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Image, Platform, StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { Login, LoginRes } from '../APIs/Login';
 import { LaoQGError } from '../Common/Errors';
+import LaoQGImage from '../Common/Image';
 import { RootStackParamList } from '../Common/Navigation';
+import { LaoQGProps } from '../Common/Props';
 import { myServer } from '../Common/Server';
 import { windowsStyles } from '../Common/Styles';
 import { AuthInfo, UserInfo } from './AuthEntity';
 
-export interface AccountProps {
+export interface AccountProps extends LaoQGProps {
   authInfo: AuthInfo,
   updateAuthInfo: (authInfo: AuthInfo) => void,
-  emitError: (error: LaoQGError) => void,
 }
 
 const Account: React.FC<AccountProps> = (props: AccountProps) => {
@@ -56,7 +57,7 @@ const Account: React.FC<AccountProps> = (props: AccountProps) => {
       navigation.navigate('Chat');
 
       // 弹出登陆成功提示
-      props.emitError(new LaoQGError(0, "NCMRN00", "登陆成功。"));
+      props.showError(new LaoQGError(0, "NCMRN00", "登陆成功。"));
     } catch (error) {
       // 登陆失败
       // 清空密码
@@ -67,11 +68,11 @@ const Account: React.FC<AccountProps> = (props: AccountProps) => {
       props.authInfo.permission = null;
       props.updateAuthInfo(props.authInfo);
       if (error instanceof LaoQGError) {
-        props.emitError(error);
+        props.showError(error);
       } else if (error instanceof Error) {
-        props.emitError(new LaoQGError(900, "ECMRN00", error.message));
+        props.showError(new LaoQGError(900, "ECMRN00", error.message));
       } else {
-        props.emitError(new LaoQGError(900, "ECMRN00", "未知异常。"));
+        props.showError(new LaoQGError(900, "ECMRN00", "未知异常。"));
       }
     }
   };
@@ -79,7 +80,7 @@ const Account: React.FC<AccountProps> = (props: AccountProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Image
+        <LaoQGImage
           style={styles.icon}
           source={require('../../resources/icons/account_circle.png')}
         />

@@ -1,14 +1,15 @@
 import axios from "axios";
+import DeviceInfo from "react-native-device-info";
 import { AuthInfo } from "../Account/AuthEntity";
+import { ChatQuestionContent } from "../Chat/ChatSessionEntity";
 import { LaoQGError } from "../Common/Errors";
 import { Server } from "../Common/Server";
 import { ChatRes } from "./Chat";
-import DeviceInfo from "react-native-device-info";
 
 export interface StartChatProps {
     server: Server,
     authInfo: AuthInfo,
-    question: string,
+    questionContents: ChatQuestionContent[],
 }
 
 export const StartChat = async (props: StartChatProps): Promise<ChatRes> => {
@@ -25,7 +26,7 @@ export const StartChat = async (props: StartChatProps): Promise<ChatRes> => {
         timeout: 120000,
     };
     const data = {
-        Question: props.question,
+        contents: props.questionContents,
     };
 
     const res = await axios.post(url, data, config);
@@ -55,7 +56,7 @@ export const StartChat = async (props: StartChatProps): Promise<ChatRes> => {
 
 const check = (props: StartChatProps) => {
     // 检测提问内容是否为空
-    if (!props.question) {
+    if (!props.questionContents) {
         throw new LaoQGError(100, "WCMRN00", "请输入提问内容");
     }
 

@@ -1,39 +1,37 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Chip, IconButton, Text } from 'react-native-paper';
 import { AuthInfo } from '../Account/AuthEntity';
 import { EndChat } from '../APIs/EndChat';
 import { CustomTheme } from '../Common/Colors';
-import { LaoQGError } from '../Common/Errors';
+import LaoQGImage from '../Common/Image';
 import { RootStackParamList } from '../Common/Navigation';
+import { LaoQGProps } from '../Common/Props';
 import { myServer } from '../Common/Server';
 import { iconStyles } from '../Common/Styles';
-import { DialogProps } from '../Interfaces/Dialog';
-import SessionArea from './SessionArea';
-import { SessionEntity } from './SessionEntity';
+import ChatSession from './ChatSession';
+import { ChatSessionEntity } from './ChatSessionEntity';
 
-interface ChatProps {
+interface ChatProps extends LaoQGProps {
   authInfo: AuthInfo,
-  emitDialog: (dialogProps: DialogProps) => void,
-  emitError: (error: LaoQGError) => void,
 }
 
 const Chat: React.FC<ChatProps> = (props: ChatProps) => {
   // 导航
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   // 会话列表
-  const [sessionEntities, setSessionEntities] = useState<SessionEntity[]>([]);
+  const [sessionEntities, setSessionEntities] = useState<ChatSessionEntity[]>([]);
   // 当前会话
   const [curSessionIndex, setCurSessionIndex] = useState<number>(0);
 
   const addSession = () => {
-    const newSessionEntity = new SessionEntity();
+    const newSessionEntity = new ChatSessionEntity();
     newSessionEntity.title = `新建会话${sessionEntities.length + 1}`;
 
     setSessionEntities((sessionEntities) => {
-      const sessionEntitiesTmp: SessionEntity[] = [...sessionEntities, newSessionEntity];
+      const sessionEntitiesTmp: ChatSessionEntity[] = [...sessionEntities, newSessionEntity];
       saveSessions(sessionEntitiesTmp);
       return sessionEntitiesTmp;
     });
@@ -48,7 +46,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
     if (sessionEntities.length === 1) {
       // 没有会话时初始化一个会话
       setSessionEntities(() => {
-        const sessionEntitiesTmp: SessionEntity[] = [new SessionEntity('', '新建会话1')];
+        const sessionEntitiesTmp: ChatSessionEntity[] = [new ChatSessionEntity('', '新建会话1')];
         saveSessions(sessionEntitiesTmp);
         return sessionEntitiesTmp;
       });
@@ -64,8 +62,16 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
   }
 
   useEffect(() => {
-    loadSessions().then((sessionEntitiesTmp) => {
-      setSessionEntities(sessionEntitiesTmp);
+    loadSessions().then((sessionEntitiesIn) => {
+      setSessionEntities(sessionEntitiesIn.map<ChatSessionEntity>((item) => {
+        if (item.contexts === null || item.contexts === undefined) {
+          item.contexts = [];
+        }
+        if (item.options === null || item.options === undefined) {
+          item.options = [];
+        }
+        return item;
+      }));
     });
   }, []);
 
@@ -77,7 +83,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
             <Chip
               key={`SessionTab${index}`}
               style={[styles.sessionTab, index !== curSessionIndex ? { backgroundColor: CustomTheme.colors.primary } : null, index !== 0 ? { marginLeft: 10 } : null]}
-              closeIcon={() => <Image style={iconStyles.medium} source={require("../../resources/icons/close.png")} />}
+              closeIcon={() => <LaoQGImage style={iconStyles.medium} source={require("../../resources/icons/close.png")} />}
               onPress={() => { setCurSessionIndex(() => { return index; }); }}
               onClose={() => { closeSession(index); }}>
               <Text style={styles.sessionTabText}>{sessionEntities[index].title}</Text>
@@ -85,7 +91,11 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
           ))}
           <IconButton
             mode='contained'
-            icon={() => <Image style={iconStyles.medium} source={require('../../resources/icons/add.png')} />}
+            icon={() => {
+              return (
+                <LaoQGImage style={iconStyles.medium} source={require('../../resources/icons/add.png')} />
+              )
+            }}
             onPress={() => { return addSession(); }} />
         </View>
       </ScrollView>
@@ -94,7 +104,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
           key={`Area${index}`}
           style={[styles.sessionAreaContainer,
           index !== curSessionIndex ? { display: 'none' } : {}]}>
-          <SessionArea
+          <ChatSession
             authInfo={props.authInfo}
             session={item}
             updateSession={() => {
@@ -103,12 +113,13 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
                 return sessionEntities;
               });
             }}
-            emitDialog={props.emitDialog}
-            emitError={(error) => {
+            showImage={props.showImage}
+            showDialog={props.showDialog}
+            showError={(error) => {
               if (error.getMessageCode().startsWith('EAU')) {
                 navigation.navigate('Account');
               }
-              props.emitError(error);
+              props.showError(error);
             }} />
         </View>
       })}
@@ -157,23 +168,23 @@ const styles = StyleSheet.create({
 })
 
 /** 加载会话记录 */
-const loadSessions = async (): Promise<SessionEntity[]> => {
+const loadSessions = async (): Promise<ChatSessionEntity[]> => {
   try {
     // 从本地缓存加载会话
     const sessionEntitiesStr: string | null = await AsyncStorage.getItem('SessionEntities');
     // 没有本地缓存时初始化一个会话
     if (sessionEntitiesStr === null) { throw new Error("Null Pointer Exception"); }
-    const newSessionEntities: SessionEntity[] = JSON.parse(sessionEntitiesStr);
+    const newSessionEntities: ChatSessionEntity[] = JSON.parse(sessionEntitiesStr);
     // 没有会话时初始化一个会话
     if (newSessionEntities.length === 0) { throw new Error("Null Pointer Exception"); }
     return newSessionEntities;
   } catch (exception) {
-    return [new SessionEntity('', '新建会话1')];
+    return [new ChatSessionEntity('', '新建会话1')];
   }
 }
 
 /** 缓存会话记录 */
-const saveSessions = async (sessionEntities: SessionEntity[]): Promise<void> => {
+const saveSessions = async (sessionEntities: ChatSessionEntity[]): Promise<void> => {
   try {
     const sessionEntitiesStr: string = JSON.stringify(sessionEntities);
     // 缓存会话记录到本地缓存
