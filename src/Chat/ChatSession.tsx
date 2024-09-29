@@ -109,10 +109,13 @@ const ChatSession: React.FC<ChatSessionProps> = (props: ChatSessionProps) => {
                 const layoutTmp = event.nativeEvent.layout;
                 setContextAreaContainerLayouts(
                   (contextAreaContainerLayouts) => {
-                    const contextAreaContainerLayoutsTmp = [...contextAreaContainerLayouts];
-                    for (let i = index; i < contextAreaContainerLayoutsTmp.length; i++) {
-                      contextAreaContainerLayoutsTmp.push({ x: 0, y: 0, width: 0, height: 0, });
-                    }
+                    const layoutRectangle: LayoutRectangle = { x: 0, y: 0, width: 0, height: 0 };
+                    const contextAreaContainerLayoutsTmp = contextAreaContainerLayouts.length > index
+                      ? [...contextAreaContainerLayouts]
+                      : [...contextAreaContainerLayouts, ...Array.from(
+                        { length: index + 1 - contextAreaContainerLayouts.length },
+                        () => layoutRectangle
+                      )];
                     contextAreaContainerLayoutsTmp[index] = layoutTmp;
                     return contextAreaContainerLayoutsTmp;
                   }

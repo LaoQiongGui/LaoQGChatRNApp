@@ -27,8 +27,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
   const [curSessionIndex, setCurSessionIndex] = useState<number>(0);
 
   const addSession = () => {
-    const newSessionEntity = new ChatSessionEntity();
-    newSessionEntity.title = `新建会话${sessionEntities.length + 1}`;
+    const newSessionEntity = new ChatSessionEntity(`新建会话${sessionEntities.length + 1}`);
 
     setSessionEntities((sessionEntities) => {
       const sessionEntitiesTmp: ChatSessionEntity[] = [...sessionEntities, newSessionEntity];
@@ -46,7 +45,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
     if (sessionEntities.length === 1) {
       // 没有会话时初始化一个会话
       setSessionEntities(() => {
-        const sessionEntitiesTmp: ChatSessionEntity[] = [new ChatSessionEntity('', '新建会话1')];
+        const sessionEntitiesTmp: ChatSessionEntity[] = [new ChatSessionEntity('新建会话1')];
         saveSessions(sessionEntitiesTmp);
         return sessionEntitiesTmp;
       });
@@ -181,7 +180,7 @@ const loadSessions = async (): Promise<ChatSessionEntity[]> => {
     if (newSessionEntities.length === 0) { throw new Error("Null Pointer Exception"); }
     return newSessionEntities;
   } catch (exception) {
-    return [new ChatSessionEntity('', '新建会话1')];
+    return [new ChatSessionEntity('新建会话1')];
   }
 }
 

@@ -30,13 +30,12 @@ export class ChatSessionEntity {
     options: SessionContext[]
 
     constructor(
-        sessionId: string = '',
         title: string = '',
         contexts: SessionContext[] = [],
         options: SessionContext[] = [],
     ) {
         this.instanceId = uuid.v4() as string;
-        this.sessionId = sessionId;
+        this.sessionId = null;
         this.title = title;
         this.contexts = contexts;
         this.options = options;
