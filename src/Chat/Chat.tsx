@@ -77,6 +77,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
 
   return (
     <View style={styles.container}>
+      {/* 会话导航栏 */}
       <ScrollView horizontal style={styles.sessionTabScroll} showsHorizontalScrollIndicator={false}>
         <View style={styles.sessionTabContainer}>
           {sessionEntities.map((item, index) => (
@@ -99,6 +100,7 @@ const Chat: React.FC<ChatProps> = (props: ChatProps) => {
             onPress={() => { return addSession(); }} />
         </View>
       </ScrollView>
+      {/* 会话主体 */}
       {sessionEntities.map((item, index) => {
         return <View
           key={`Area${index}`}

@@ -9,14 +9,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Account from './src/Account/Account';
 import { AuthInfo } from './src/Account/AuthEntity';
 import Administrator from './src/Administrator/Administrator';
+import Chat from './src/Chat/Chat';
 import { CustomTheme } from './src/Common/Colors';
 import { LaoQGError } from './src/Common/Errors';
 import LaoQGImage from './src/Common/Image';
 import { RootStackParamList } from './src/Common/Navigation';
 import { iconStyles } from './src/Common/Styles';
 import { DialogProps } from './src/Interfaces/Dialog';
-import Test from './src/Test/Test';
-import Chat from './src/Chat/Chat';
 
 const Tab = createMaterialBottomTabNavigator<RootStackParamList>();
 const iconMap: Map<string, any> = new Map([
@@ -82,9 +81,6 @@ const App: React.FC = () => {
                   showDialog={showDialog}
                   showError={showError} />}
               </Tab.Screen>
-              {/* <Tab.Screen name='Chat'>
-                {() => <Test showImage={showImage} showDialog={showDialog} showError={showError} />}
-              </Tab.Screen> */}
               {Platform.OS === 'windows' && authInfo.permission === 'super' ? <Tab.Screen name='Administrator'>
                 {() => <Administrator />}
               </Tab.Screen> : null}

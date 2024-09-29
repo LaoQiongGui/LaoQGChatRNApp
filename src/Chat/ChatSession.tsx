@@ -1,7 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { LayoutChangeEvent, LayoutRectangle, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import ImageCropPicker, { Image } from 'react-native-image-crop-picker';
-import { IconButton, TextInput } from 'react-native-paper';
+import { LayoutChangeEvent, LayoutRectangle, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { AuthInfo } from '../Account/AuthEntity';
 import { Chat, ChatRes } from '../APIs/Chat';
 import { StartChat } from '../APIs/StartChat';
@@ -10,8 +8,9 @@ import { LaoQGError } from '../Common/Errors';
 import LaoQGImage from '../Common/Image';
 import { LaoQGProps } from '../Common/Props';
 import { myServer } from '../Common/Server';
-import { iconStyles, windowsStyles } from '../Common/Styles';
+import { iconStyles } from '../Common/Styles';
 import ChatContent from './ChatContent';
+import ChatRichInput, { ChatRichInputRef } from './ChatRichInput';
 import { ChatQuestionContent, ChatSessionEntity } from './ChatSessionEntity';
 
 interface ChatSessionProps extends LaoQGProps {
@@ -27,32 +26,28 @@ enum Status {
 const ChatSession: React.FC<ChatSessionProps> = (props: ChatSessionProps) => {
   /** 页面状态 */
   const [status, setStatus] = useState<Status>(Status.NORMAL);
-  /** 提问内容 */
-  const [questionContent, setQuestionContent] = useState<ChatQuestionContent[]>([]);
-  /** 是否显示提问扩展组件 */
-  const [isExtensionsDisplayed, setIsExtensionsDisplayed] = useState<boolean>(false);
   /** 问答区域布局 */
   const [contextAreaContainerLayouts, setContextAreaContainerLayouts] = useState<LayoutRectangle[]>([]);
-  /** 提问区域布局 */
-  const [questionContainerLayout, setQuestionContainerLayout] = useState<LayoutRectangle>({ x: 0, y: 0, width: 0, height: 0, });
   /** 滚动区域 */
   const scrollViewRef = useRef<ScrollView>(null);
+  /** 提问输入框 */
+  const chatRichInputRef = useRef<ChatRichInputRef>(null);
 
-  const submitHandler = async (questionContentIn: ChatQuestionContent[] = questionContent) => {
+  const submit = async (chatQuestionContents: ChatQuestionContent[]) => {
     // 提问内容为空或处于加载状态直接返回
-    if (!questionContentIn || status === Status.LOADING) { return; }
+    if (!chatQuestionContents || chatQuestionContents.length === 0 || status === Status.LOADING) { return; }
 
     // 去除上一条发送失败的信息
     if (status === Status.ERROR) { props.session.contexts.pop(); }
 
     // 将提问加入聊天内容中
-    props.session.contexts.push({ type: 'question', contents: questionContentIn });
+    props.session.contexts.push({ type: 'question', contents: chatQuestionContents });
 
     // 更新视图
     props.updateSession();
 
     // 清空提问内容
-    setQuestionContent([]);
+    chatRichInputRef.current?.clear();
 
     // 切换为加载状态
     setStatus(Status.LOADING);
@@ -64,7 +59,7 @@ const ChatSession: React.FC<ChatSessionProps> = (props: ChatSessionProps) => {
 
     // 发送请求
     try {
-      const data: ChatRes = await chat(props.authInfo, props.session, questionContentIn);
+      const data: ChatRes = await chat(props.authInfo, props.session, chatQuestionContents);
       if (data) {
         props.session.sessionId = data.sessionId;
 
@@ -141,7 +136,7 @@ const ChatSession: React.FC<ChatSessionProps> = (props: ChatSessionProps) => {
                           // 再次发送消息
                           if (props.session.contexts[props.session.contexts.length - 1].type === 'question') {
                             const questionTextTmp = props.session.contexts[props.session.contexts.length - 1].contents;
-                            submitHandler(questionTextTmp as ChatQuestionContent[]);
+                            submit(questionTextTmp as ChatQuestionContent[]);
                           }
 
                           // 隐藏对话框
@@ -171,111 +166,13 @@ const ChatSession: React.FC<ChatSessionProps> = (props: ChatSessionProps) => {
         </ScrollView>
       </View>
       {/* 提问区域 */}
-      <View style={styles.questionContainer}>
-        {/* 展开提问扩展组件（图片、语音输入等） */}
-        <IconButton
-          mode='contained'
-          style={styles.displayExtensionsButtion}
-          onPress={() => { setIsExtensionsDisplayed(!isExtensionsDisplayed); }}
-          icon={() => {
-            return (
-              <LaoQGImage
-                style={iconStyles.medium}
-                source={isExtensionsDisplayed
-                  ? require('../../resources/icons/arrow_back_2.png')
-                  : require('../../resources/icons/arrow_forward_2.png')}
-              />
-            )
-          }} />
-        <View style={styles.questionSubContainer} onLayout={(event) => {
-          const layoutTmp = event.nativeEvent.layout;
-          setQuestionContainerLayout(layoutTmp)
-        }}>
-          <TextInput
-            label={'提问'}
-            style={styles.questionTextArea}
-            contentStyle={Platform.OS === 'windows' ? windowsStyles.input : null}
-            multiline={true}
-            // value={questionText}
-            // onChangeText={setQuestionText}
-            scrollEnabled={true}
-            right={
-              <TextInput.Icon
-                style={styles.sendButton}
-                onPress={() => { submitHandler(); }}
-                icon={() => <LaoQGImage style={iconStyles.medium} source={require('../../resources/icons/arrow_forward.png')} />} />
-            }
-          />
-          {/* 提问扩展组件（图片、语音输入等） */}
-          <View style={[
-            styles.questionExtensionsContainer,
-            { width: questionContainerLayout.width - 50 },
-            isExtensionsDisplayed ? null : { display: 'none' },]}>
-            {/* 相机 */}
-            <IconButton
-              mode='contained'
-              icon={() => {
-                return (
-                  <LaoQGImage style={iconStyles.small} source={require('../../resources/icons/camera.png')} />
-                )
-              }}
-              onPress={async () => {
-                try {
-                  const image: Image = await ImageCropPicker.openCamera({
-                    mediaType: 'photo',
-                    includeBase64: true,
-                  });
-                  console.log(image.data);
-                } catch (error) {
-                  if (error instanceof Error) {
-                    if (error.message === 'User cancelled image selection') {
-                      props.showError(new LaoQGError(100, "WIMRN00", '已取消拍照。'));
-                    } else {
-                      props.showError(new LaoQGError(900, "EIMRN00", error.message));
-                    }
-                  } else {
-                    props.showError(new LaoQGError(900, "ECMRN00", "未知异常。"));
-                  }
-                }
-              }} />
-            {/* 图片 */}
-            <IconButton
-              mode='contained'
-              icon={() => {
-                return (
-                  <LaoQGImage style={iconStyles.small} source={require('../../resources/icons/add_image.png')} />
-                )
-              }}
-              onPress={async () => {
-                try {
-                  const image: Image = await ImageCropPicker.openPicker({
-                    mediaType: 'photo',
-                    includeBase64: true,
-                  });
-                  console.log(image.data);
-                } catch (error) {
-                  if (error instanceof Error) {
-                    if (error.message === 'User cancelled image selection') {
-                      props.showError(new LaoQGError(100, "WIMRN00", '已取消照片选择。'));
-                    } else {
-                      props.showError(new LaoQGError(900, "EIMRN00", error.message));
-                    }
-                  } else {
-                    props.showError(new LaoQGError(900, "ECMRN00", "未知异常。"));
-                  }
-                }
-              }} />
-            {/* 语音 */}
-            <IconButton
-              mode='contained'
-              icon={() => {
-                return (
-                  <LaoQGImage style={iconStyles.small} source={require('../../resources/icons/mic.png')} />
-                )
-              }} />
-          </View>
-        </View>
-      </View>
+      <ChatRichInput
+        containerStyle={styles.questionContainer}
+        ref={chatRichInputRef}
+        showImage={props.showImage}
+        showDialog={props.showDialog}
+        showError={props.showError}
+        sendChatQuestionContents={submit} />
     </View>
   )
 }
@@ -328,31 +225,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 5,
     backgroundColor: CustomTheme.colors.primaryContainer,
-  },
-  displayExtensionsButtion: {
-    marginTop: 'auto',
-    marginBottom: 'auto',
-  },
-  questionSubContainer: {
-    height: 100,
-    flex: 1,
-  },
-  questionTextArea: {
-    height: 100,
-    flex: 1,
-  },
-  sendButton: {
-    width: 50,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  questionExtensionsContainer: {
-    position: 'absolute',
-    flexDirection: 'row',
-    height: '100%',
-    backgroundColor: CustomTheme.colors.primaryContainer,
-    zIndex: 1,
   },
   errorAreaInfo: {
     backgroundColor: CustomTheme.colors.primaryContainer,
