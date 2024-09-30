@@ -6,6 +6,10 @@
     <ProjectReference Include="$(ProjectDir)..\..\node_modules\@react-native-async-storage\async-storage\windows\ReactNativeAsyncStorage\ReactNativeAsyncStorage.vcxproj">
       <Project>{4855D892-E16C-404D-8286-0089E0F7F9C4}</Project>
     </ProjectReference>
+    <!-- Projects from react-native-device-info -->
+    <ProjectReference Include="$(ProjectDir)..\..\node_modules\react-native-device-info\windows\RNDeviceInfoCPP\RNDeviceInfoCPP.vcxproj">
+      <Project>{3e3931f2-4735-4417-8cb0-33668a7314d6}</Project>
+    </ProjectReference>
     <!-- Projects from react-native-permissions -->
     <ProjectReference Include="$(ProjectDir)..\..\node_modules\react-native-permissions\windows\RNPermissions\RNPermissions.vcxproj">
       <Project>{99677b9d-a27b-4239-930e-c36c8d339c54}</Project>
@@ -17,6 +21,10 @@
     <!-- Projects from react-native-svg -->
     <ProjectReference Include="$(ProjectDir)..\..\node_modules\react-native-svg\windows\RNSVG\RNSVG.vcxproj">
       <Project>{7acf84ec-efba-4043-8e14-40b159508902}</Project>
+    </ProjectReference>
+    <!-- Projects from react-native-webview -->
+    <ProjectReference Include="$(ProjectDir)..\..\node_modules\react-native-webview\windows\ReactNativeWebView\ReactNativeWebView.vcxproj">
+      <Project>{00AA3765-C6A0-4713-B3F9-BFE47B9C83F5}</Project>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -6,6 +6,9 @@
 // Includes from @react-native-async-storage/async-storage
 #include <winrt/ReactNativeAsyncStorage.h>
 
+// Includes from react-native-device-info
+#include <winrt/RNDeviceInfoCPP.h>
+
 // Includes from react-native-permissions
 #include <winrt/RNPermissions.h>
 
@@ -15,6 +18,9 @@
 // Includes from react-native-svg
 #include <winrt/RNSVG.h>
 
+// Includes from react-native-webview
+#include <winrt/ReactNativeWebView.h>
+
 namespace winrt::Microsoft::ReactNative
 {
 
@@ -22,12 +28,16 @@ void RegisterAutolinkedNativeModulePackages(winrt::Windows::Foundation::Collecti
 { 
     // IReactPackageProviders from @react-native-async-storage/async-storage
     packageProviders.Append(winrt::ReactNativeAsyncStorage::ReactPackageProvider());
+    // IReactPackageProviders from react-native-device-info
+    packageProviders.Append(winrt::RNDeviceInfoCPP::ReactPackageProvider());
     // IReactPackageProviders from react-native-permissions
     packageProviders.Append(winrt::RNPermissions::ReactPackageProvider());
     // IReactPackageProviders from react-native-screens
     packageProviders.Append(winrt::RNScreens::ReactPackageProvider());
     // IReactPackageProviders from react-native-svg
     packageProviders.Append(winrt::RNSVG::ReactPackageProvider());
+    // IReactPackageProviders from react-native-webview
+    packageProviders.Append(winrt::ReactNativeWebView::ReactPackageProvider());
 }
 
 }

@@ -1,6 +1,8 @@
-import { Image as WinImage, ImageProps as WinImageProps } from '@rneui/themed';
+import type { ImageProps as WinImageProps } from '@rneui/themed';
+import { Image as WinImage } from '@rneui/themed';
 import { ImageURISource, Platform, TouchableOpacity, View } from 'react-native';
-import FastImage, { FastImageProps } from 'react-native-fast-image';
+import type { FastImageProps } from 'react-native-fast-image';
+import FastImage from 'react-native-fast-image';
 import { ImageSource } from 'react-native-image-viewing/dist/@types';
 
 type UnionImageProps = FastImageProps & WinImageProps;

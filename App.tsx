@@ -51,11 +51,11 @@ const App: React.FC = () => {
     return () => { }
   }, []);
   /** 全屏显示图片 */
-  const showImage = (imageSource: ImageSource) => { setImageSource(imageSource); }
+  const showImage = (imageSource: ImageSource) => { setImageSource(imageSource); };
   /** 显示提示框 */
-  const showDialog = (dialogProps: DialogProps) => { setDialogProps(dialogProps); }
+  const showDialog = (dialogProps: DialogProps) => { setDialogProps(dialogProps); };
   /** 显示消息框 */
-  const showError = (error: LaoQGError) => { setError(error); }
+  const showError = (error: LaoQGError) => { setError(error); };
 
   return (
     <PaperProvider theme={CustomTheme}>
