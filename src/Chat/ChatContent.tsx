@@ -13,7 +13,7 @@ interface ChatContentProps extends LaoQGProps {
 const ChatContent: React.FC<ChatContentProps> = (props: ChatContentProps) => {
   if (Array.isArray(props.sessionContext.contents)) {
     return (
-      <Text>{(props.sessionContext.contents as ChatQuestionContent[]).map((item, index) => {
+      <Text selectable={true}>{(props.sessionContext.contents as ChatQuestionContent[]).map((item, index) => {
         if (item.type === 'Text') {
           return item.text;
         } else if (item.type === 'Image') {
@@ -37,7 +37,7 @@ const ChatContent: React.FC<ChatContentProps> = (props: ChatContentProps) => {
     );
   } else {
     return (
-      <Text>{props.sessionContext.contents.toString()}</Text>
+      <Text selectable={true}>{props.sessionContext.contents.toString()}</Text>
     );
   }
 }

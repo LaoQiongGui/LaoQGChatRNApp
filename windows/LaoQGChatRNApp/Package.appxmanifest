@@ -6,15 +6,15 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
 
-  <Identity
+  <!-- <Identity
     Name="com.laoqionggui.laoqiongguichatrnapp"
     Publisher="CN=LaoQiongGui"
-    Version="1.2.0.0" />
+    Version="1.2.1.0" /> -->
 
-  <!-- <Identity
+  <Identity
     Name="com.laoqionggui.laoqiongguichatrnapp.debug"
     Publisher="CN=LaoQiongGui"
-    Version="1.2.0.0" /> -->
+    Version="1.2.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="096bc4fa-fb72-4051-a1c6-57713ff0c5c7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
